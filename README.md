@@ -34,5 +34,54 @@ $setup_info['example']['tables'] = array('egw_example');
 ```
 * As the app was installed without a database table, we have to uninstall and reinstall it as described in [step 1](https://github.com/EGroupware/example/tree/step1/README.md)
 
+* Adding a [/setup/default_records.inc.php](https://github.com/EGroupware/example/tree/step3/setup/default_records.inc.php) to automatic add run rights for our Default (all users) group:
+```
+// give Default group rights for Example app
+$defaultgroup = $GLOBALS['egw_setup']->add_account('Default', 'Default', 'Group', false, false);
+$GLOBALS['egw_setup']->add_acl('example', 'run', $defaultgroup);
+```
+
+* We need some code to be able to store files, thought the heavy lifting comes from our [Api\Storage\Base}(https://github.com/EGroupware/egroupware/blob/master/api/src/Storage/Base.php)
+```
+namespace EGroupware\Example;
+
+use EGroupware\Api;
+
+class Bo extends Api\Storage\Base
+{
+	const APP = 'example';
+	const TABLE = 'egw_example';
+
+	/**
+	 * Constructor
+	 */
+	public function __construct()
+	{
+		parent::__construct(self::APP, self::TABLE);
+	}
+
+	/**
+	 * saves the content of data to the db
+	 *
+	 * @param array $keys =null if given $keys are copied to data before saveing => allows a save as
+	 * @param string|array $extra_where =null extra where clause, eg. to check an etag, returns true if no affected rows!
+	 * @return int|boolean 0 on success, or errno != 0 on error, or true if $extra_where is given and no rows affected
+	 */
+	public function save($keys = null, $extra_where = null)
+	{
+		$this->data_merge($keys);
+
+		if (empty($this->data['host_id']))
+		{
+			$this->data['host_creator'] = $GLOBALS['egw_info']['user']['account_id'];
+			$this->data['host_created'] = $this->now;
+		}
+		$this->data['host_modifier'] = $GLOBALS['egw_info']['user']['account_id'];
+		$this->data['host_modified'] = $this->now;
+
+		return parent::save(null, $extra_where);
+	}
+}
+```
 
 --> [continue to step 4](https://github.com/EGroupware/example/tree/step3) by checking out branch ```step4``` in your workingcopy
