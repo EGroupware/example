@@ -1,6 +1,6 @@
-# Example app for development
+# Example app for EGroupware development
 
-### 1. Step: minimal "Hello World" app
+#### 1. Step: minimal "Hello World" app
 
 ![step1-hello-world](https://user-images.githubusercontent.com/972180/68392090-4b047a80-0169-11ea-87ce-a1ef6d2f7ea5.png)
 
