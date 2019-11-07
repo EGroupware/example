@@ -2,86 +2,218 @@
 
 #### 1. Step: [minimal "Hello World" app](https://github.com/EGroupware/example/tree/step1)
 #### 2. Step: [an edit dialog](https://github.com/EGroupware/example/tree/step2)
-#### 3. Step: create a database table for data persistence
+#### 3. Step: [create a database table for data persistence](https://github.com/EGroupware/example/tree/step3)
+#### 4. Step: Add UI to list hosts
 
-* To persist the hosts in our example app, we have to create a database schema:
-
-[![Create a database schema](https://img.youtube.com/vi/rvZsZz9InB8/0.jpg)](https://www.youtube.com/watch?v=rvZsZz9InB8 "Create a database schema")
-
-* Database schema is stored in [/setup/tables_current.inc.php](https://github.com/EGroupware/example/tree/step3/setup/tables_current.inc.php)
+* We need to create an eTemplate [index.xet](https://github.com/EGroupware/example/tree/step4/templates/default/index.xet) to display the host list / index page
 ```
-$phpgw_baseline = array(
-	'egw_example' => array(
-		'fd' => array(
-			'host_id' => array('type' => 'auto','nullable' => False),
-			'host_name' => array('type' => 'varchar','precision' => '64','nullable' => False),
-			'host_description' => array('type' => 'varchar','precision' => '16384'),
-			'host_creator' => array('type' => 'int','meta' => 'account','precision' => '4','nullable' => False),
-			'host_created' => array('type' => 'timestamp','nullable' => False),
-			'host_modifier' => array('type' => 'int','meta' => 'account','precision' => '4'),
-			'host_modified' => array('type' => 'timestamp','default' => 'current_timestamp')
-		),
-		'pk' => array('host_id'),
-		'fk' => array(),
-		'ix' => array(),
-		'uc' => array()
-	)
-);
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE overlay PUBLIC "-//EGroupware GmbH//eTemplate 2//EN" "http://www.egroupware.org/etemplate2.dtd">
+<overlay>
+	<template id="example.index.rows" template="" lang="" group="0" version="19.1.001">
+		<grid width="100%">
+			<columns>
+				<column width="15"/>
+				<column width="15%"/>
+				<column width="40%"/>
+				<column width="120"/>
+				<column width="120"/>
+			</columns>
+			<rows>
+				<row class="th">
+					<nextmatch-sortheader label="#" id="host_id"/>
+					<nextmatch-header label="Name" id="host_name"/>
+					<nextmatch-header label="Description" id="host_description"/>
+					<vbox>
+						<nextmatch-sortheader label="Created" id="host_created"/>
+						<nextmatch-accountfilter id="host_creator"/>
+					</vbox>
+					<vbox>
+						<nextmatch-sortheader label="Last modified" id="host_modified"/>
+						<nextmatch-accountfilter id="host_modifier"/>
+					</vbox>
+				</row>
+				<row class="$row_cont[cat_id] $row_cont[class]">
+					<description id="${row}[host_id]"/>
+					<description id="${row}[host_name]"/>
+					<description id="${row}[host_description]"/>
+					<vbox>
+						<date-time id="${row}[host_created]" readonly="true"/>
+						<select-account id="${row}[host_creator]" readonly="true"/>
+					</vbox>
+					<vbox>
+						<date-time id="${row}[host_modified]" readonly="true"/>
+						<select-account id="${row}[host_modifier]" readonly="true"/>
+					</vbox>
+				</row>
+			</rows>
+		</grid>
+	</template>
+	<template id="example.index.add" template="" lang="" group="0" version="19.1.001">
+		<buttononly statustext="Add" id="add"
+			onclick="egw(window).openPopup(egw::link('/index.php','menuaction=example.EGroupware\\Example\\Ui.edit'),'640','480','_blank','example',null,true); return false;"/>
+	</template>
+	<template id="example.index" template="" lang="" group="0" version="19.1.001">
+		<nextmatch id="nm" options="example.index.rows" header_left="example.index.add"/>
+	</template>
+</overlay>
 ```
-* And we had to add the table to [/setup/setup.inc.php](https://github.com/EGroupware/example/tree/step3/setup/setup.inc.php)
-```
-$setup_info['example']['tables'] = array('egw_example');
-```
-* As the app was installed without a database table, we have to uninstall and reinstall it as described in [step 1](https://github.com/EGroupware/example/tree/step1/README.md)
 
-* Adding a [/setup/default_records.inc.php](https://github.com/EGroupware/example/tree/step3/setup/default_records.inc.php) to automatic add run rights for our Default (all users) group:
+* some more code in our Ui class to [display the list](https://github.com/EGroupware/example/tree/step4/src/Ui.php#L128):
 ```
-// give Default group rights for Example app
-$defaultgroup = $GLOBALS['egw_setup']->add_account('Default', 'Default', 'Group', false, false);
-$GLOBALS['egw_setup']->add_acl('example', 'run', $defaultgroup);
-```
-
-* We need some code to be able to store hosts, thought the heavy lifting comes from our [Api\Storage\Base](https://github.com/EGroupware/egroupware/blob/master/api/src/Storage/Base.php)
-```
-namespace EGroupware\Example;
-
-use EGroupware\Api;
-
-class Bo extends Api\Storage\Base
-{
-	const APP = 'example';
-	const TABLE = 'egw_example';
-
 	/**
-	 * Constructor
-	 */
-	public function __construct()
-	{
-		parent::__construct(self::APP, self::TABLE);
-	}
-
-	/**
-	 * saves the content of data to the db
+	 * Index
 	 *
-	 * @param array $keys =null if given $keys are copied to data before saveing => allows a save as
-	 * @param string|array $extra_where =null extra where clause, eg. to check an etag, returns true if no affected rows!
-	 * @return int|boolean 0 on success, or errno != 0 on error, or true if $extra_where is given and no rows affected
+	 * @param array $content =null
 	 */
-	public function save($keys = null, $extra_where = null)
+	public function index(array $content=null)
 	{
-		$this->data_merge($keys);
-
-		if (empty($this->data['host_id']))
+		if (!is_array($content) || empty($content['nm']))
 		{
-			$this->data['host_creator'] = $GLOBALS['egw_info']['user']['account_id'];
-			$this->data['host_created'] = $this->now;
+			$content = [
+				'nm' => [
+					'get_rows'       =>	Bo::APP.'.'.self::class.'.get_rows',
+					'no_filter'      => true,	// disable the diverse filters we not (yet) use
+					'no_filter2'     => true,
+					'no_cat'         => true,
+					'order'          => 'host_modified',// IO name of the column to sort after (optional for the sortheaders)
+					'sort'           => 'DESC',// IO direction of the sort: 'ASC' or 'DESC'
+					'row_id'         => 'host_id',
+					'row_modified'   => 'host_modified',
+					'actions'        => $this->get_actions(),
+				]
+			];
 		}
-		$this->data['host_modifier'] = $GLOBALS['egw_info']['user']['account_id'];
-		$this->data['host_modified'] = $this->now;
-
-		return parent::save(null, $extra_where);
+		elseif(!empty($content['nm']['action']))
+		{
+			try {
+				Api\Framework::message($this->action($content['nm']['action'],
+					$content['nm']['selected'], $content['nm']['select_all']));
+			}
+			catch (\Exception $ex) {
+				Api\Framework::message($ex->getMessage(), 'error');
+			}
+		}
+		$tmpl = new Api\Etemplate('example.index');
+		$tmpl->exec('example.'.self::class.'.index', $content, [], [], ['nm' => $content['nm']]);
 	}
-}
+```
+* some more code in our Ui class to [fetch the rows to display](https://github.com/EGroupware/example/tree/step4/src/Ui.php#L111):
+```
+	/**
+	 * Fetch rows to display
+	 *
+	 * @param array $query
+	 * @param array& $rows =null
+	 * @param array& $readonlys =null
+	 */
+	public function get_rows($query, array &$rows=null, array &$readonlys=null)
+	{
+		return $this->bo->get_rows($query, $rows, $readonlys);
+	}
+```
+* [show a context menu on the list to eg. edit a row / host](https://github.com/EGroupware/example/tree/step4/src/Ui.php#L160)
+```
+	/**
+	 * Return actions for cup list
+	 *
+	 * @param array $cont values for keys license_(nation|year|cat)
+	 * @return array
+	 */
+	protected function get_actions()
+	{
+		return [
+			'edit' => [
+				'caption' => 'Edit',
+				'default' => true,
+				'allowOnMultiple' => false,
+				'url' => 'menuaction=example.'.self::class.'.edit&host_id=$id',
+				'popup' => '640x480',
+				'group' => $group=0,
+			],
+			'add' => [
+				'caption' => 'Add',
+				'url' => 'menuaction=example.'.self::class.'.edit',
+				'popup' => '640x320',
+				'group' => $group,
+			],
+			'delete' => [
+				'caption' => 'Delete',
+				'confirm' => 'Delete this host(s)',
+				'group' => $group=5,
+			],
+		];
+	}
 ```
 
---> [continue to step 4](https://github.com/EGroupware/example/tree/step3) by checking out branch ```step4``` in your workingcopy
+* [code to load and save host to edit them](https://github.com/EGroupware/example/tree/step4/src/Ui.php#L45)
+```
+	/**
+	 * Edit a host
+	 *
+	 * @param array $content =null
+	 */
+	public function edit(array $content=null)
+	{
+		if (!is_array($content))
+		{
+			if (!empty($_GET['host_id']))
+			{
+				if (!($content = $this->bo->read(['host_id' => $_GET['host_id']])))
+				{
+					Api\Framework::window_close(lang('Entry not found!'));
+				}
+			}
+			else
+			{
+				$content = $this->bo->init();
+			}
+		}
+		else
+		{
+			$button = key($content['button']);
+			unset($content['button']);
+			switch($button)
+			{
+				case 'save':
+				case 'apply':
+					if (!$this->bo->save($content))
+					{
+						Api\Framework::refresh_opener(lang('Entry saved.'),
+							Bo::APP, $this->bo->data['host_id'],
+							empty($content['host_id']) ? 'add' : 'edit');
+
+						$content = $this->bo->data;
+					}
+					else
+					{
+						Api\Framework::message(lang('Error storing entry!'));
+						unset($button);
+					}
+					if ($button === 'save')
+					{
+						Api\Framework::window_close();	// does NOT return
+					}
+					Api\Framework::message(lang('Entry saved.'));
+					break;
+
+				case 'delete':
+					if (!$this->bo->delete(['host_id' => $content['host_id']]))
+					{
+						Api\Framework::message(lang('Error deleting entry!'));
+					}
+					else
+					{
+						Api\Framework::refresh_opener(lang('Entry deleted.'),
+							Bo::APP, $content['host_id'], 'delete');
+
+						Api\Framework::window_close();	// does NOT return
+					}
+			}
+		}
+		$tmpl = new Api\Etemplate('example.edit');
+		$tmpl->exec('example.'.self::class.'.edit', $content, [], [], $content, 2);
+	}
+```
+
+--> [continue to step 5](https://github.com/EGroupware/example/tree/step3) by checking out branch ```step5``` in your workingcopy
