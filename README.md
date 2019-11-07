@@ -1,8 +1,8 @@
-# Example app for development
+# Example app for EGroupware development
 
-#### [1. Step](https://github.com/EGroupware/example/tree/step1): minimal "Hello World" app
+#### 1. Step: [minimal "Hello World" app](https://github.com/EGroupware/example/tree/step1)
 
-### 2. Step: an edit dialog
+#### 2. Step: an edit dialog
 ![step2-edit-dialog](https://user-images.githubusercontent.com/972180/68398527-2e6e3f80-0175-11ea-8eb0-81132ffc30f1.png)
 
 * Ui in EGroupware uses eTemplate2 templating system rending an xml template plus some content on client-side
@@ -92,3 +92,4 @@ $setup_info['example']['index']     = 'example.'.EGroupware\Example\Ui::class.'.
 ```
 UPDATE egw_applications SET app_index='example.EGroupware\\Example\\Ui.index&ajax=true';
 ```
+--> [continue to step 3](https://github.com/EGroupware/example/tree/step3) by checking out branch ```step3``` in your workingcopy
