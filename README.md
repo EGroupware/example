@@ -6,8 +6,13 @@
 
 This branch shows the minimal directory and file structure.
 
-After cloning the repo into you EGroupware directore:
+1. Cloning the repo into you EGroupware directory:
 ```
 cd /path/to/egroupware
 git clone -b step1 https://github.com/EGroupware/example.git
 ```
+
+2. Install the app in EGroupware setup: http://localhost/egroupware/setup/
+
+* Log in using the "admin" account for setup in the upper login box
+* click on Application and check install checkbox for example
