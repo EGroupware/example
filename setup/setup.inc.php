@@ -30,3 +30,4 @@ $setup_info['example']['depends'][] = array(
 	 'appname' => 'api',
 	 'versions' => Array('19.1')
 );
+	$setup_info['example']['tables'] = array('egw_example');
