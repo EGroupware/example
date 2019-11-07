@@ -83,3 +83,12 @@ class Ui
 	}
 }
 ```
+* In step 1 our minimal app was echo-ing out "Hello "World". To make that happen, it had to run in an iframe. Now as we use the eTemplate system, we no longer need an iframe (with all the problem it has).
+* To let EGroupware framework know, that we don't need an iframe, we have to change the index entrypoint (and other links we genrate) by using a get parameter ```ajax=true``` in our [setup/setup.inc.php]():
+```
+$setup_info['example']['index']     = 'example.'.EGroupware\Example\Ui::class.'.index&ajax=true';
+```
+* after that change we either have to uninstall and re-install the app as described in step 1, or create an update script for it or most quickly run the following SQL on the EGroupware database AND then log out and in again:
+```
+UPDATE egw_applications SET app_index='example.EGroupware\\Example\\Ui::class.index&ajax=true';
+```
