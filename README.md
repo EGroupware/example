@@ -4,7 +4,7 @@
 
 ![step1-hello-world](https://user-images.githubusercontent.com/972180/68392090-4b047a80-0169-11ea-87ce-a1ef6d2f7ea5.png)
 
-This branch shows the minimal directory and file structure.
+This branch shows the minimal directory and file structure for an EGroupware app.
 
 1. Cloning the repo into you EGroupware directory:
 ```
@@ -23,4 +23,4 @@ git clone -b step1 https://github.com/EGroupware/example.git
 ![step1-add-run-acl](https://user-images.githubusercontent.com/972180/68394225-b9e3d280-016d-11ea-856d-36033d6c7fd8.png)
 * you have to log out and in again, so you session get's the new application run rights
 
---> [continue to step 2](https://github.com/EGroupware/example/tree/step1) by checking out branch ```step2``` in your workingcopy
+--> [continue to step 2](https://github.com/EGroupware/example/tree/step2) by checking out branch ```step2``` in your workingcopy
