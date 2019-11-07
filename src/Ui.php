@@ -12,6 +12,8 @@
 
 namespace EGroupware\Example;
 
+use EGroupware\Api;
+
 class Ui
 {
 	/**
@@ -21,7 +23,23 @@ class Ui
 	 */
 	public $public_functions = [
 		'index' => true,
+		'edit'  => true,
 	];
+
+	/**
+	 * Edit a host
+	 *
+	 * @param array $content =null
+	 */
+	public function edit(array $content=null)
+	{
+		if (!is_array($content))
+		{
+			$content = [];
+		}
+		$tmpl = new Api\Etemplate('example.edit');
+		$tmpl->exec('example.'.self::class.'.edit', $content);
+	}
 
 	/**
 	 * Index
@@ -30,6 +48,6 @@ class Ui
 	 */
 	public function index(array $content=null)
 	{
-		echo "Hello World :)";
+		$this->edit();
 	}
 }
