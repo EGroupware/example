@@ -14,7 +14,7 @@ $setup_info['example']['name']      = 'example';
 $setup_info['example']['version']   = '19.1';
 $setup_info['example']['app_order'] = 5;
 $setup_info['example']['enable']    = 1;
-$setup_info['example']['index']     = 'example.'.EGroupware\Example\Ui::class.'.index';
+$setup_info['example']['index']     = 'example.'.EGroupware\Example\Ui::class.'.index&ajax=true';
 
 $setup_info['example']['author'] =
 $setup_info['example']['maintainer'] = array(
