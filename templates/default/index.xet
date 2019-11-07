@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE overlay PUBLIC "-//EGroupware GmbH//eTemplate 2//EN" "http://www.egroupware.org/etemplate2.dtd">
+<overlay>
+	<template id="example.index.rows" template="" lang="" group="0" version="19.1.001">
+		<grid width="100%">
+			<columns>
+				<column width="15"/>
+				<column width="15%"/>
+				<column width="40%"/>
+				<column width="120"/>
+				<column width="120"/>
+			</columns>
+			<rows>
+				<row class="th">
+					<nextmatch-sortheader label="#" id="host_id"/>
+					<nextmatch-header label="Name" id="host_name"/>
+					<nextmatch-header label="Description" id="host_description"/>
+					<vbox>
+						<nextmatch-sortheader label="Created" id="host_created"/>
+						<nextmatch-accountfilter id="host_creator"/>
+					</vbox>
+					<vbox>
+						<nextmatch-sortheader label="Last modified" id="host_modified"/>
+						<nextmatch-accountfilter id="host_modifier"/>
+					</vbox>
+				</row>
+				<row class="$row_cont[cat_id] $row_cont[class]">
+					<description id="${row}[host_id]"/>
+					<description id="${row}[host_name]"/>
+					<description id="${row}[host_description]"/>
+					<vbox>
+						<date-time id="${row}[host_created]" readonly="true"/>
+						<select-account id="${row}[host_creator]" readonly="true"/>
+					</vbox>
+					<vbox>
+						<date-time id="${row}[host_modified]" readonly="true"/>
+						<select-account id="${row}[host_modifier]" readonly="true"/>
+					</vbox>
+				</row>
+			</rows>
+		</grid>
+	</template>
+	<template id="example.index.add" template="" lang="" group="0" version="19.1.001">
+		<buttononly statustext="Add" id="add"
+			onclick="egw(window).openPopup(egw::link('/index.php','menuaction=example.EGroupware\\Example\\Ui.edit'),'640','480','_blank','example',null,true); return false;"/>
+	</template>
+	<template id="example.index" template="" lang="" group="0" version="19.1.001">
+		<nextmatch id="nm" options="example.index.rows" header_left="example.index.add"/>
+	</template>
+</overlay>
+

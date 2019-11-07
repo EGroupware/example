@@ -9,12 +9,15 @@
 			</columns>
 			<rows>
 				<row>
-					<description for="hostname" value="Hostname"/>
-					<textbox id="hostname" tabindex="1" maxlength="64" class="et2_fullWidth" />
+					<description for="host_name" value="Hostname"/>
+					<textbox id="host_name" tabindex="1" maxlength="64" class="et2_fullWidth" />
 				</row>
 				<row>
-					<description for="description" value="Description"/>
-					<textbox id="description" tabindex="2" class="et2_fullWidth" rows="7"/>
+					<description for="host_description" value="Description"/>
+					<textbox id="host_description" tabindex="2" class="et2_fullWidth" rows="12"/>
+				</row>
+				<row disable="!@host_id">
+
 				</row>
 				<row>
 					<hbox span="all" width="100%">
