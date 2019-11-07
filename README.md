@@ -5,9 +5,8 @@
 #### 3. Step: create a database table for data persistence
 
 * To persist the hosts in our example app, we have to create a database schema:
-<a href="https://www.youtube.com/watch?feature=player_embedded&v=rvZsZz9InB8
-" target="_blank"><img src="https://img.youtube.com/vi/rvZsZz9InB8/0.jpg" 
-alt="create a database schema" width="1255" height="520" border="10" /></a>
+
+<iframe width="1255" height="520" src="https://youtu.be/rvZsZz9InB8"></iframe>
 
 
 
