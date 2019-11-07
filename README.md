@@ -3,7 +3,9 @@
 #### 1. Step: [minimal "Hello World" app](https://github.com/EGroupware/example/tree/step1)
 #### 2. Step: [an edit dialog](https://github.com/EGroupware/example/tree/step2)
 #### 3. Step: [create a database table for data persistence](https://github.com/EGroupware/example/tree/step3)
+
 #### 4. Step: Add UI to list hosts
+![step4-list](https://user-images.githubusercontent.com/972180/68430023-95104f00-01af-11ea-92a7-060f4209dd0d.png)
 
 * We need to create an eTemplate [index.xet](https://github.com/EGroupware/example/tree/step4/templates/default/index.xet) to display the host list / index page
 ```
