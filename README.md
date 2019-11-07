@@ -90,5 +90,5 @@ $setup_info['example']['index']     = 'example.'.EGroupware\Example\Ui::class.'.
 ```
 * after that change we either have to uninstall and re-install the app as described in step 1, or create an update script for it or most quickly run the following SQL on the EGroupware database AND then log out and in again:
 ```
-UPDATE egw_applications SET app_index='example.EGroupware\\Example\\Ui::class.index&ajax=true';
+UPDATE egw_applications SET app_index='example.EGroupware\\Example\\Ui.index&ajax=true';
 ```
