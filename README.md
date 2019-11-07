@@ -21,3 +21,4 @@ git clone -b step1 https://github.com/EGroupware/example.git
 * Log into EGroupware again and add run-rights for example app to eg. default group
 ![step1-admin-acl](https://user-images.githubusercontent.com/972180/68394226-b9e3d280-016d-11ea-9dbf-e769eb499e82.png)
 ![step1-add-run-acl](https://user-images.githubusercontent.com/972180/68394225-b9e3d280-016d-11ea-856d-36033d6c7fd8.png)
+* you have to log out and in again, so you session get's the new applicatio run rights
