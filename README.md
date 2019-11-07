@@ -84,4 +84,4 @@ class Bo extends Api\Storage\Base
 }
 ```
 
---> [continue to step 4](https://github.com/EGroupware/example/tree/step3) by checking out branch ```step4``` in your workingcopy
+--> [continue to step 4](https://github.com/EGroupware/example/tree/step4) by checking out branch ```step4``` in your workingcopy
