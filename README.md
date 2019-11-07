@@ -6,7 +6,9 @@
 
 * To persist the hosts in our example app, we have to create a database schema:
 
-<iframe width="1255" height="520" src="https://youtu.be/rvZsZz9InB8"></iframe>
+<div align="center">
+    <iframe width="1255" height="520" src="https://youtu.be/rvZsZz9InB8"></iframe>
+</div>
 
 
 
