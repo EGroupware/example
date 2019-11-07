@@ -41,7 +41,7 @@ $defaultgroup = $GLOBALS['egw_setup']->add_account('Default', 'Default', 'Group'
 $GLOBALS['egw_setup']->add_acl('example', 'run', $defaultgroup);
 ```
 
-* We need some code to be able to store files, thought the heavy lifting comes from our [Api\Storage\Base}(https://github.com/EGroupware/egroupware/blob/master/api/src/Storage/Base.php)
+* We need some code to be able to store files, thought the heavy lifting comes from our [Api\Storage\Base](https://github.com/EGroupware/egroupware/blob/master/api/src/Storage/Base.php)
 ```
 namespace EGroupware\Example;
 
