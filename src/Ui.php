@@ -183,6 +183,13 @@ class Ui
 				'popup' => '640x480',
 				'group' => $group=0,
 			],
+			'view' => [
+				'caption' => 'View',
+				'default' => true,
+				'allowOnMultiple' => false,
+				'onExecute' => 'javaScript:app.example.view',
+				'group' => $group,
+			],
 			'add' => [
 				'caption' => 'Add',
 				'url' => 'menuaction=example.'.self::class.'.edit',
