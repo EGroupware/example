@@ -52,7 +52,7 @@ class Bo extends Api\Storage\Base
 			// check if we have links to save (new entries only)
 			is_array($keys['link_to']['to_id']) && count($keys['link_to']['to_id']))
 		{
-			Api\Link::link(self::APP, $this->data['ts_id'], $keys['link_to']['to_id']);
+			Api\Link::link(self::APP, $this->data['host_id'], $keys['link_to']['to_id']);
 		}
 	}
 
