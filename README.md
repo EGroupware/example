@@ -8,7 +8,7 @@
 
 [![Create a database schema](https://img.youtube.com/vi/rvZsZz9InB8/0.jpg)](https://www.youtube.com/watch?v=rvZsZz9InB8 "Create a database schema")
 
-* Database schema is stored in [/setup/tables_current.inc.php](https://github.com/EGroupware/example/tree/step3/setup/tables_current.inc.php)
+* Database schema is stored in [setup/tables_current.inc.php](https://github.com/EGroupware/example/tree/step3/setup/tables_current.inc.php)
 ```
 $phpgw_baseline = array(
 	'egw_example' => array(
@@ -28,13 +28,13 @@ $phpgw_baseline = array(
 	)
 );
 ```
-* And we had to add the table to [/setup/setup.inc.php](https://github.com/EGroupware/example/tree/step3/setup/setup.inc.php)
+* And we had to add the table to [setup/setup.inc.php](https://github.com/EGroupware/example/tree/step3/setup/setup.inc.php)
 ```
 $setup_info['example']['tables'] = array('egw_example');
 ```
 * As the app was installed without a database table, we have to uninstall and reinstall it as described in [step 1](https://github.com/EGroupware/example/tree/step1/README.md)
 
-* Adding a [/setup/default_records.inc.php](https://github.com/EGroupware/example/tree/step3/setup/default_records.inc.php) to automatic add run rights for our Default (all users) group:
+* Adding a [setup/default_records.inc.php](https://github.com/EGroupware/example/tree/step3/setup/default_records.inc.php) to automatic add run rights for our Default (all users) group:
 ```
 // give Default group rights for Example app
 $defaultgroup = $GLOBALS['egw_setup']->add_account('Default', 'Default', 'Group', false, false);
