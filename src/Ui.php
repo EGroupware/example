@@ -179,14 +179,14 @@ class Ui
 				'default' => true,
 				'allowOnMultiple' => false,
 				'onExecute' => 'javaScript:app.example.view',
-				'group' => $group,
+				'group' => $group=0,
 			],
 			'edit' => [
 				'caption' => 'Edit',
 				'allowOnMultiple' => false,
 				'url' => 'menuaction=example.'.self::class.'.edit&host_id=$id',
 				'popup' => '640x480',
-				'group' => $group=0,
+				'group' => $group,
 			],
 			'add' => [
 				'caption' => 'Add',
