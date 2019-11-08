@@ -174,20 +174,19 @@ class Ui
 	protected function get_actions()
 	{
 		return [
-			'edit' => [
-				'caption' => 'Edit',
-				'default' => true,
-				'allowOnMultiple' => false,
-				'url' => 'menuaction=example.'.self::class.'.edit&host_id=$id',
-				'popup' => '640x480',
-				'group' => $group=0,
-			],
 			'view' => [
 				'caption' => 'View',
 				'default' => true,
 				'allowOnMultiple' => false,
 				'onExecute' => 'javaScript:app.example.view',
 				'group' => $group,
+			],
+			'edit' => [
+				'caption' => 'Edit',
+				'allowOnMultiple' => false,
+				'url' => 'menuaction=example.'.self::class.'.edit&host_id=$id',
+				'popup' => '640x480',
+				'group' => $group=0,
 			],
 			'add' => [
 				'caption' => 'Add',
