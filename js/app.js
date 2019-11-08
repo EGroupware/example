@@ -53,7 +53,7 @@ app.classes.example = AppJS.extend(
 			callback: function(button){
 				if (button == 'edit')
 				{
-					egw.open(values.content.host_id, self.appname, 'add');
+					egw.open(values.content.host_id, self.appname, 'view');
 				}
 			},
 			title: 'view host',
