@@ -76,7 +76,7 @@ class Ui
 							Bo::APP, $this->bo->data['host_id'],
 							empty($content['host_id']) ? 'add' : 'edit');
 
-						$content = $this->bo->data;
+						$content = array_merge($content, $this->bo->data);
 					}
 					else
 					{
@@ -105,8 +105,7 @@ class Ui
 			}
 		}
 		$content['link_to'] = [
-			'to_id' => $this->data['host_id'] ? $this->data['host_id'] :
-				($this->data['link_to']['host_id'] ? $this->data['link_to']['host_id'] : $content['link_to']['host_id']),
+			'to_id'  => $content['host_id'],
 			'to_app' => Bo::APP,
 		];
 		$readonlys = [
