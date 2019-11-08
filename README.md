@@ -6,7 +6,7 @@
 
 * To persist the hosts in our example app, we have to create a database schema:
 
-[![Create a database schema](https://img.youtube.com/vi/rvZsZz9InB8/0.jpg)](https://www.youtube.com/watch?v=rvZsZz9InB8 "Create a database schema")
+[![Create a database schema](https://raw.githubusercontent.com/wiki/EGroupware/example/images/step3-01.png)](https://www.youtube.com/watch?v=rvZsZz9InB8 "Create a database schema")
 
 * Database schema is stored in [setup/tables_current.inc.php](https://github.com/EGroupware/example/tree/step3/setup/tables_current.inc.php)
 ```
