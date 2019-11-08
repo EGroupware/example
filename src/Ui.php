@@ -104,8 +104,16 @@ class Ui
 					}
 			}
 		}
+		$content['link_to'] = [
+			'to_id' => $this->data['host_id'] ? $this->data['host_id'] :
+				($this->data['link_to']['host_id'] ? $this->data['link_to']['host_id'] : $content['link_to']['host_id']),
+			'to_app' => Bo::APP,
+		];
+		$readonlys = [
+			'button[delete]' => !$content['host_id'],
+		];
 		$tmpl = new Api\Etemplate('example.edit');
-		$tmpl->exec('example.'.self::class.'.edit', $content, [], [], $content, 2);
+		$tmpl->exec('example.'.self::class.'.edit', $content, [], $readonlys, $content, 2);
 	}
 
 	/**

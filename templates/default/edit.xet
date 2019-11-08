@@ -1,6 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE overlay PUBLIC "-//EGroupware GmbH//eTemplate 2//EN" "http://www.egroupware.org/etemplate2.dtd">
 <overlay>
+	<template id="example.edit.notes" template="" lang="" group="0" version="19.1.001">
+		<textbox multiline="true" id="host_description" rows="14" cols="70" class="et2_fullWidth"/>
+	</template>
+	<template id="example.edit.links" template="" lang="" group="0" version="19.1.001">
+		<grid width="100%" overflow="auto">
+			<columns>
+				<column width="99%"/>
+			</columns>
+			<rows>
+				<row>
+					<link-to id="link_to"/>
+				</row>
+				<row class="th">
+					<description value="Existing links"/>
+				</row>
+				<row>
+					<link-list id="link_to"/>
+				</row>
+			</rows>
+		</grid>
+	</template>
 	<template id="example.edit" template="" lang="" group="0" version="19.1">
 		<grid width="100%">
 			<columns>
@@ -13,11 +34,30 @@
 					<textbox id="host_name" tabindex="1" maxlength="64" class="et2_fullWidth" />
 				</row>
 				<row>
-					<description for="host_description" value="Description"/>
-					<textbox id="host_description" tabindex="2" class="et2_fullWidth" rows="12"/>
+					<tabbox id="tabs" class="et2_nowrap" width="100%" span="all" tab_height="200">
+						<tabs>
+							<tab id="notes" label="Description"/>
+							<tab id="links" label="Links"/>
+						</tabs>
+						<tabpanels>
+							<template id="example.edit.notes"/>
+							<template id="example.edit.links"/>
+						</tabpanels>
+					</tabbox>
 				</row>
-				<row disable="!@host_id">
-
+				<row disabled="!@host_id">
+					<description value="Creator"/>
+					<hbox width="100%">
+						<select-account id="host_creator" readonly="true"/>
+						<date-time id="host_created" readonly="true" align="right"/>
+					</hbox>
+				</row>
+				<row disabled="!@host_id">
+					<description value="Last modified"/>
+					<hbox width="100%">
+						<select-account id="host_modifier" readonly="true"/>
+						<date-time id="host_modified" readonly="true" align="right"/>
+					</hbox>
 				</row>
 				<row>
 					<hbox span="all" width="100%">
