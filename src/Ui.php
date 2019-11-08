@@ -140,6 +140,7 @@ class Ui
 					'row_id'         => 'host_id',
 					'row_modified'   => 'host_modified',
 					'actions'        => $this->get_actions(),
+					'placeholder_actions' => array('add')
 				]
 			];
 		}
