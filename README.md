@@ -163,7 +163,7 @@ The link system abstracts EGroupware entries, by addressing them via their app-n
 				<!-- the rest of the file is unchanged -->
 ```
 
-* While above link-to widget takes fully care of adding links and files to existing entries (with know id), we need to [help in adding them to new entries](https://github.com/EGroupware/example/tree/step5/src/Bo.php#L31) registered by "search_link":
+* While above link-to widget takes fully care of adding links and files to existing entries (with know id), we need to help in [adding them to new entries](https://github.com/EGroupware/example/tree/step5/src/Bo.php#L31):
 ```
 	/**
 	 * saves the content of data to the db
@@ -195,7 +195,7 @@ The link system abstracts EGroupware entries, by addressing them via their app-n
 	}
 ```
 
-* and [let the link-system know if an entry get's deleted](https://github.com/EGroupware/example/tree/step5/src/Bo.php#L60):
+* and let the link-system know when an [entry get's deleted](https://github.com/EGroupware/example/tree/step5/src/Bo.php#L60):
 ```
 	/**
 	 * Deletes an example entry identified by $keys or the loaded one
