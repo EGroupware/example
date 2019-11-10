@@ -32,6 +32,10 @@ class Hooks
 			),
 			'view_id' => 'host_id',
 			'view_popup'  => '630x480',
+			'edit'  => array(
+				'menuaction' => Bo::APP.'.'.Ui::class.'.edit',
+			),
+			'edit_id' => 'host_id',
 			'edit_popup'  => '630x480',
 			'list' => array(
 				'menuaction' => Bo::APP.'.'.Ui::class.'.index',
