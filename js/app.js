@@ -6,7 +6,6 @@
  * @author Hadi Nategh <hn-At-egroupware.org>
  * @copyright (c) 2019 by Hadi Nategh <hn-At-egroupware.org>
  * @license http://opensource.org/licenses/gpl-license.php GPL - GNU General Public License
- * @version $Id$
  */
 
 app.classes.example = AppJS.extend(
@@ -25,8 +24,8 @@ app.classes.example = AppJS.extend(
 	/**
 	 * et2 object is ready to use
 	 *
-	 * @param {object} et2
-	 * @param {string} name
+	 * @param {object} et2 object
+	 * @param {string} name template name et2_ready is called for eg. "example.edit"
 	 */
 	et2_ready: function(et2,name)
 	{
@@ -34,8 +33,14 @@ app.classes.example = AppJS.extend(
 		this._super.apply(this, arguments);
 	},
 
+	/**
+	 * View a host / example entry
+	 *
+	 * @param {object} _action action object, attribute id contains the name of the action
+	 * @param {array} _selected array with selected rows, attribute id containers the row-id
+	 */
 	view: function(_action, _selected) {
-		var row_id = _selected[0].id;
+		var row_id = _selected[0].id;	// "example::123"
 
 		var values = {
 			content: egw.dataGetUIDdata(row_id).data,
@@ -62,6 +67,5 @@ app.classes.example = AppJS.extend(
 			template: egw.webserverUrl+'/example/templates/default/edit.xet',
 			value: values
 		});
-
 	}
 });
