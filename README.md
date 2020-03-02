@@ -218,4 +218,4 @@
 	}
 ```
 
---> [continue to step 5](https://github.com/EGroupware/example/tree/step3) by checking out branch ```step5``` in your workingcopy
+--> [continue to step 5](https://github.com/EGroupware/example/tree/step5) by checking out branch ```step5``` in your workingcopy
