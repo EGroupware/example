@@ -9,7 +9,7 @@
 
 #### further planned steps:
 
-* perferences
+* preferences
 * site configuration
 * categories
 * custom fields
