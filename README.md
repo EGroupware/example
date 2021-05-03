@@ -5,7 +5,7 @@
 #### 3. Step: [create a database table for data persistence](https://github.com/EGroupware/example/tree/step3)
 #### 4. Step: [add UI to list hosts](https://github.com/EGroupware/example/tree/step4)
 #### 5. Step: [Linking with other EGroupware entries and attaching files](https://github.com/EGroupware/example/tree/step5)
-#### 6. Step: Client-side actions in JavaScript and eTemplate dialogs
+#### 6. Step: Client-side actions in TypeScript and eTemplate dialogs
 We're adding now a dialog to display a host-entry without server-side interaction.
 ![step6-js-view](https://user-images.githubusercontent.com/972180/68548645-82845880-03ef-11ea-9fc5-3a4c6ea434a8.png)
 
@@ -28,33 +28,33 @@ We're adding now a dialog to display a host-entry without server-side interactio
 
 * value "javaScript:app.example.view" references our client-side application object for the example app implemented by a new file [js/apps.js](https://github.com/EGroupware/example/tree/step6/js/app.js), which get's automatically loaded by the framework, if it exists:
 ```
-app.classes.example = AppJS.extend(
+class ExampleApp extends EgwApp
 {
 	// app name
-	appname: 'example',
+	readonly appname = 'example';
 
 	/**
 	 * app js initialization stage
 	 */
-	init: function()
+	constructor(appname: string)
 	{
-		this._super.apply(this, arguments);
-	},
+		super(appname);
+	}
 
 	/**
 	 * et2 object is ready to use
 	 *
-	 * @param {object} et2
-	 * @param {string} name
+	 * @param {object} et2 object
+	 * @param {string} name template name et2_ready is called for eg. "example.edit"
 	 */
-	et2_ready: function(et2,name)
+	et2_ready(et2,name)
 	{
 		// call parent
-		this._super.apply(this, arguments);
-	},
+		super.et2_ready.apply(this, arguments);
+	}
 
 ```
-The above et2_ready method get's called, once an eTemplate is fully loaded and can e.g. be used to modify it on client-side or register more handles. As the app object get shared by all views / templates of an app, you can use the ```name``` parameter of ```et2_ready``` to distinguisch between them.
+The above et2_ready method get's called, once an eTemplate is fully loaded and can e.g. be used to modify it on client-side or register more handles. As the app object get shared by all views / templates of an app, you can use the ```name``` parameter of ```et2_ready``` to distinguish between them.
 
 The ```view``` method get's called by our new view action:
 ```
@@ -64,18 +64,19 @@ The ```view``` method get's called by our new view action:
 	 * @param {object} _action action object, attribute id contains the name of the action
 	 * @param {array} _selected array with selected rows, attribute id containers the row-id
 	 */
-	view: function(_action, _selected) {
+	view(_action, _selected)
+	{
 		var row_id = _selected[0].id;	// "example::123"
 
 		var values = {
-			content: egw.dataGetUIDdata(row_id).data,
+			content: this.egw.dataGetUIDdata(row_id).data,
 			readonlys: {
 				'__ALL__':true
 			}
 		};
 		var buttons = [
 			{text: this.egw.lang("close"), id: "close", image: "close"},
-			{text: this.egw.lang("edit"), id:"edit", image: "edit"}
+			{text: this.egw.lang("edit"), id: "edit", image: "edit"}
 		];
 		var self = this;
 
@@ -83,17 +84,18 @@ The ```view``` method get's called by our new view action:
 			callback: function(button){
 				if (button == 'edit')
 				{
-					egw.open(values.content.host_id, self.appname, 'view');
+					this.egw.open(values.content.host_id, self.appname, 'view');
 				}
-			},
+			}.bind(this),
 			title: 'view host',
 			buttons: buttons,
 			type: et2_dialog.PLAIN_MESSAGE,
-			template: egw.webserverUrl+'/example/templates/default/edit.xet',
+			template: this.egw.webserverUrl+'/example/templates/default/edit.xet',
 			value: values
 		});
 	}
-});
-```
+}
 
+app.classes.example = ExampleApp;
+```
 --> [continue to step 7](https://github.com/EGroupware/example/tree/step7) by checking out branch ```step7``` in your workingcopy
