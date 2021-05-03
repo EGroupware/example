@@ -6,6 +6,7 @@
 #### 4. Step: [add UI to list hosts](https://github.com/EGroupware/example/tree/step4)
 #### 5. Step: [Linking with other EGroupware entries and attaching files](https://github.com/EGroupware/example/tree/step5)
 #### 6. Step: [Client-side actions in JavaScript and eTemplate dialogs](https://github.com/EGroupware/example/tree/step6)
+#### 7. Step: [A TypeScript calculator](https://github.com/EGroupware/example/tree/step7)
 
 #### further planned steps:
 
