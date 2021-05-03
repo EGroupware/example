@@ -85,6 +85,43 @@ var ExampleApp = /** @class */ (function (_super) {
             value: values
         });
     };
+    /**
+     * Open calculator dialog
+     *
+     * @param _node
+     * @param _widget
+     */
+    ExampleApp.prototype.calculator = function (_node, _widget) {
+        et2_core_widget_1.et2_createWidget("dialog", {
+            callback: function (button) {
+            }.bind(this),
+            title: 'Calculator',
+            buttons: [],
+            type: et2_widget_dialog_1.et2_dialog.PLAIN_MESSAGE,
+            template: this.egw.webserverUrl + '/example/templates/default/calculator.xet',
+            value: {}
+        });
+    };
+    /**
+     * Act on number buttons with id "num_N"
+     *
+     * @param _node
+     * @param _widget
+     */
+    ExampleApp.prototype.calculatorNumber = function (_node, _widget) {
+        var value = this.et2.getValueById('value');
+        value += _widget.id.substr(4); // id: "num_0"
+        this.et2.setValueById('value', value);
+    };
+    /**
+     * Act on Clear button
+     *
+     * @param _node
+     * @param _widget
+     */
+    ExampleApp.prototype.calculatorClear = function (_node, _widget) {
+        this.et2.setValueById('value', '');
+    };
     return ExampleApp;
 }(egw_app_1.EgwApp));
 app.classes.example = ExampleApp;

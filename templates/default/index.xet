@@ -43,6 +43,7 @@
 	<template id="example.index.add" template="" lang="" group="0" version="19.1.001">
 		<buttononly statustext="Add" id="add"
 			onclick="egw(window).openPopup(egw::link('/index.php','menuaction=example.EGroupware\\Example\\Ui.edit'),'640','480','_blank','example',null,true); return false;"/>
+		<button label="Calculator" onclick="app.example.calculator"/>
 	</template>
 	<template id="example.index" template="" lang="" group="0" version="19.1.001">
 		<nextmatch id="nm" options="example.index.rows" header_left="example.index.add"/>

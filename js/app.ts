@@ -20,6 +20,7 @@ import '../etemplate/et2_types';
 import { EgwApp } from '../../api/js/jsapi/egw_app';
 import {et2_createWidget} from "../../api/js/etemplate/et2_core_widget";
 import {et2_dialog} from "../../api/js/etemplate/et2_widget_dialog";
+import {et2_button} from "../../api/js/etemplate/et2_widget_button";
 
 class ExampleApp extends EgwApp
 {
@@ -81,6 +82,50 @@ class ExampleApp extends EgwApp
 			template: this.egw.webserverUrl+'/example/templates/default/edit.xet',
 			value: values
 		});
+	}
+
+	/**
+	 * Open calculator dialog
+	 *
+	 * @param _node
+	 * @param _widget
+	 */
+	calculator(_node : HTMLButtonElement, _widget : et2_button)
+	{
+		et2_createWidget("dialog",{
+			callback: function(button){
+
+			}.bind(this),
+			title: 'Calculator',
+			buttons: [],
+			type: et2_dialog.PLAIN_MESSAGE,
+			template: this.egw.webserverUrl+'/example/templates/default/calculator.xet',
+			value: {}
+		});
+	}
+
+	/**
+	 * Act on number buttons with id "num_N"
+	 *
+	 * @param _node
+	 * @param _widget
+	 */
+	calculatorNumber(_node : HTMLButtonElement, _widget : et2_button)
+	{
+		let value = this.et2.getValueById('value');
+		value += _widget.id.substr(4);	// id: "num_0"
+		this.et2.setValueById('value', value);
+	}
+
+	/**
+	 * Act on Clear button
+	 *
+	 * @param _node
+	 * @param _widget
+	 */
+	calculatorClear(_node : HTMLButtonElement, _widget : et2_button)
+	{
+		this.et2.setValueById('value', '');
 	}
 }
 

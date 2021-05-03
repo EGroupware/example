@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE overlay PUBLIC "-//EGroupware GmbH//eTemplate 2//EN" "http://www.egroupware.org/etemplate2.dtd">
+<overlay>
+	<template id="example.calculator" template="" lang="" group="0" version="19.1.001">
+		<grid width="100%" overflow="auto">
+			<columns>
+				<column/>
+				<column/>
+				<column/>
+				<column/>
+			</columns>
+			<rows>
+				<row>
+					<float id="value" span="all" width="100%" readonly="true"/>
+				</row>
+				<row>
+					<button label="Clear" id="clear" span="3" onclick="app.example.calculatorClear" align="center"/>
+					<button label="/" id="div" align="center"/>
+				</row>
+				<row>
+					<button label="7" id="num_7" onclick="app.example.calculatorNumber" align="center"/>
+					<button label="8" id="num_8" onclick="app.example.calculatorNumber" align="center"/>
+					<button label="9" id="num_0" onclick="app.example.calculatorNumber" align="center"/>
+					<button label="*" id="mul" onclick="et_alert('To be implemented ;)')" align="center"/>
+				</row>
+				<row>
+					<!-- ToDo -->
+				</row>
+			</rows>
+		</grid>
+	</template>
+</overlay>
+
