@@ -62,9 +62,10 @@ class Bo extends Api\Storage\Base
 	 * Reimplemented to notify the link class (unlink)
 	 *
 	 * @param array $keys if given array with col => value pairs to characterise the rows to delete
+	 * @param boolean $only_return_query =false * NOT supported, but required by PHP 8 *
 	 * @return int affected rows, should be 1 if ok, 0 if an error
 	 */
-	function delete($keys=null)
+	function delete($keys=null, $only_return_query=false)
 	{
 		if (!is_array($keys) && (int) $keys)
 		{
