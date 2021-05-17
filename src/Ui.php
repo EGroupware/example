@@ -161,6 +161,8 @@ class Ui
 				Api\Framework::message($ex->getMessage(), 'error');
 			}
 		}
+		// send template-url incl. cache-buster from server-side
+		$content['calculator_tpl'] = Api\Etemplate::rel2url(Api\Etemplate::relPath('example.calculator'));
 		$tmpl = new Api\Etemplate('example.index');
 		$tmpl->exec('example.'.self::class.'.index', $content, [], [], ['nm' => $content['nm']]);
 	}

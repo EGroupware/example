@@ -99,7 +99,7 @@ class ExampleApp extends EgwApp
 			title: 'Calculator',
 			buttons: [],
 			type: et2_dialog.PLAIN_MESSAGE,
-			template: this.egw.webserverUrl+'/example/templates/default/calculator.xet',
+			template: this.et2.getArrayMgr('content').getEntry('calculator_tpl'),
 			value: {
 				content: {}
 			}
@@ -114,9 +114,11 @@ class ExampleApp extends EgwApp
 	 */
 	calculatorNumber(_node : HTMLButtonElement, _widget : et2_button)
 	{
-		let value = this.et2.getValueById('value');
+		// cant use this.et2 in dialog
+		const et2 = _widget.getInstanceManager().widgetContainer;
+		let value = et2.getValueById('value');
 		value += _widget.id.substr(4);	// id: "num_0"
-		this.et2.setValueById('value', value);
+		et2.setValueById('value', value);
 	}
 
 	/**
@@ -127,7 +129,8 @@ class ExampleApp extends EgwApp
 	 */
 	calculatorClear(_node : HTMLButtonElement, _widget : et2_button)
 	{
-		this.et2.setValueById('value', '');
+		const et2 = _widget.getInstanceManager().widgetContainer;
+		et2.setValueById('value', '');
 	}
 }
 

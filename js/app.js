@@ -98,7 +98,7 @@ var ExampleApp = /** @class */ (function (_super) {
             title: 'Calculator',
             buttons: [],
             type: et2_widget_dialog_1.et2_dialog.PLAIN_MESSAGE,
-            template: this.egw.webserverUrl + '/example/templates/default/calculator.xet',
+            template: this.et2.getArrayMgr('content').getEntry('calculator_tpl'),
             value: {
                 content: {}
             }
@@ -111,9 +111,11 @@ var ExampleApp = /** @class */ (function (_super) {
      * @param _widget
      */
     ExampleApp.prototype.calculatorNumber = function (_node, _widget) {
-        var value = this.et2.getValueById('value');
+        // cant use this.et2 in dialog
+        var et2 = _widget.getInstanceManager().widgetContainer;
+        var value = et2.getValueById('value');
         value += _widget.id.substr(4); // id: "num_0"
-        this.et2.setValueById('value', value);
+        et2.setValueById('value', value);
     };
     /**
      * Act on Clear button
@@ -122,7 +124,8 @@ var ExampleApp = /** @class */ (function (_super) {
      * @param _widget
      */
     ExampleApp.prototype.calculatorClear = function (_node, _widget) {
-        this.et2.setValueById('value', '');
+        var et2 = _widget.getInstanceManager().widgetContainer;
+        et2.setValueById('value', '');
     };
     return ExampleApp;
 }(egw_app_1.EgwApp));

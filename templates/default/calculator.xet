@@ -2,7 +2,7 @@
 <!DOCTYPE overlay PUBLIC "-//EGroupware GmbH//eTemplate 2//EN" "http://www.egroupware.org/etemplate2.dtd">
 <overlay>
 	<template id="example.calculator" template="" lang="" group="0" version="19.1.001">
-		<grid width="100%" overflow="auto">
+		<grid width="99%" overflow="auto" class="exampleCalculator">
 			<columns>
 				<column/>
 				<column/>
@@ -11,7 +11,7 @@
 			</columns>
 			<rows>
 				<row>
-					<float id="value" span="all" width="100%" readonly="true"/>
+					<float id="value" span="all" width="99%"/>
 				</row>
 				<row>
 					<button label="Clear" id="clear" span="3" onclick="app.example.calculatorClear" align="center"/>
@@ -21,24 +21,24 @@
 					<button label="7" id="num_7" onclick="app.example.calculatorNumber" align="center"/>
 					<button label="8" id="num_8" onclick="app.example.calculatorNumber" align="center"/>
 					<button label="9" id="num_9" onclick="app.example.calculatorNumber" align="center"/>
-					<button label="*" id="mul" onclick="et_alert('To be implemented ;)')" align="center"/>
+					<button label="*" id="mul" onclick="et2_alert('To be implemented ;)')" align="center"/>
 				</row>
 				<row>
 					<button label="4" id="num_4" onclick="app.example.calculatorNumber" align="center"/>
 					<button label="5" id="num_5" onclick="app.example.calculatorNumber" align="center"/>
 					<button label="6" id="num_6" onclick="app.example.calculatorNumber" align="center"/>
-					<button label="-" id="sub" onclick="et_alert('To be implemented ;)')" align="center"/>
+					<button label="-" id="sub" onclick="et2_alert('To be implemented ;)')" align="center"/>
 				</row>
 				<row>
 					<button label="1" id="num_1" onclick="app.example.calculatorNumber" align="center"/>
 					<button label="2" id="num_2" onclick="app.example.calculatorNumber" align="center"/>
 					<button label="3" id="num_3" onclick="app.example.calculatorNumber" align="center"/>
-					<button label="+" id="add" onclick="et_alert('To be implemented ;)')" align="center"/>
+					<button label="+" id="add" onclick="et2_alert('To be implemented ;)')" align="center" background_image="false"/>
 				</row>
 				<row>
 					<button label="0" id="num_0" span="2" onclick="app.example.calculatorNumber" align="left"/>
-					<button label="." id="komma" onclick ="app.example.calculatorNumber" align="center"/>
-					<button label="=" id="equals" onclick ="et_alert('To be implemented ;)')" align="center"/>
+					<button label="." id="comma" onclick ="app.example.calculatorNumber" align="center"/>
+					<button label="=" id="equals" onclick ="et2_alert('To be implemented ;)')" align="center"/>
 				</row>
 			</rows>
 		</grid>

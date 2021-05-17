@@ -1,0 +1,23 @@
+/**
+ * EGroupware - Example
+ *
+ * @link: https://www.egroupware.org
+ * @package Example
+ * @license http://opensource.org/licenses/gpl-license.php GPL - GNU General Public License
+ */
+/**
+ * TypeScript Calculator
+ */
+div.exampleCalculator #_value {
+  width: 97% !important;
+}
+div.exampleCalculator button {
+  width: 90%;
+  font-weight: bold;
+}
+div.exampleCalculator td[colspan="3"] button {
+  width: 97%;
+}
+div.exampleCalculator td[colspan="2"] button {
+  width: 96%;
+}
