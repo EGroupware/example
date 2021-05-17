@@ -21,6 +21,7 @@ import { EgwApp } from '../../api/js/jsapi/egw_app';
 import {et2_createWidget} from "../../api/js/etemplate/et2_core_widget";
 import {et2_dialog} from "../../api/js/etemplate/et2_widget_dialog";
 import {et2_button} from "../../api/js/etemplate/et2_widget_button";
+import { app } from '../../api/js/jsapi/egw_global';
 
 class ExampleApp extends EgwApp
 {
@@ -94,13 +95,15 @@ class ExampleApp extends EgwApp
 	{
 		et2_createWidget("dialog",{
 			callback: function(button){
-
+				
 			}.bind(this),
 			title: 'Calculator',
 			buttons: [],
 			type: et2_dialog.PLAIN_MESSAGE,
 			template: this.egw.webserverUrl+'/example/templates/default/calculator.xet',
-			value: {}
+			value: {
+				content: {}
+			}
 		});
 	}
 
