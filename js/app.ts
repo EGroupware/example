@@ -21,7 +21,6 @@ import { EgwApp } from '../../api/js/jsapi/egw_app';
 import {et2_createWidget} from "../../api/js/etemplate/et2_core_widget";
 import {et2_dialog} from "../../api/js/etemplate/et2_widget_dialog";
 import {et2_button} from "../../api/js/etemplate/et2_widget_button";
-import { app } from '../../api/js/jsapi/egw_global';
 
 class ExampleApp extends EgwApp
 {
