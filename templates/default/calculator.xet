@@ -11,34 +11,37 @@
 			</columns>
 			<rows>
 				<row>
-					<float id="value" span="all" width="99%"/>
+					<textbox id="previousOperand" span="all" width="99%" class="textbox"/>
+				</row>
+				<row>
+					<textbox id="currentOperand" span="all" width="99%" class="textbox"/>
 				</row>
 				<row>
 					<button label="Clear" id="clear" span="3" onclick="app.example.calculatorClear" align="center"/>
-					<button label="/" id="div" align="center"/>
+					<button label="/" id="div" class ="operator"  align="center" onclick="app.example.chooseOperation"/>
 				</row>
 				<row>
 					<button label="7" id="num_7" onclick="app.example.calculatorNumber" align="center"/>
 					<button label="8" id="num_8" onclick="app.example.calculatorNumber" align="center"/>
 					<button label="9" id="num_9" onclick="app.example.calculatorNumber" align="center"/>
-					<button label="*" id="mul" onclick="et2_alert('To be implemented ;)')" align="center"/>
+					<button label="*" id="mul" class ="operator" onclick="app.example.chooseOperation" align="center"/>
 				</row>
 				<row>
 					<button label="4" id="num_4" onclick="app.example.calculatorNumber" align="center"/>
 					<button label="5" id="num_5" onclick="app.example.calculatorNumber" align="center"/>
 					<button label="6" id="num_6" onclick="app.example.calculatorNumber" align="center"/>
-					<button label="-" id="sub" onclick="et2_alert('To be implemented ;)')" align="center"/>
+					<button label="-" id="sub" class ="operator" onclick="app.example.chooseOperation" align="center"/>
 				</row>
 				<row>
 					<button label="1" id="num_1" onclick="app.example.calculatorNumber" align="center"/>
 					<button label="2" id="num_2" onclick="app.example.calculatorNumber" align="center"/>
 					<button label="3" id="num_3" onclick="app.example.calculatorNumber" align="center"/>
-					<button label="+" id="add" onclick="et2_alert('To be implemented ;)')" align="center" background_image="false"/>
+					<button label="+" id="add" class ="operator" onclick="app.example.chooseOperation" align="center" background_image="false"/>
 				</row>
 				<row>
 					<button label="0" id="num_0" span="2" onclick="app.example.calculatorNumber" align="left"/>
-					<button label="." id="comma" onclick ="app.example.calculatorNumber" align="center"/>
-					<button label="=" id="equals" onclick ="et2_alert('To be implemented ;)')" align="center"/>
+					<button label="." id="num_." onclick ="app.example.calculatorNumber" align="center"/>
+					<button label="=" id="equals" class ="operator" onclick ="app.example.calculate" align="center"/>
 				</row>
 			</rows>
 		</grid>

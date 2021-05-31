@@ -197,7 +197,6 @@ class ExampleApp extends EgwApp
 			return;
 		}
 		else this.calculate(_node, _widget);
-		
 	}
 
 	calculate (_node : HTMLButtonElement, _widget : et2_button) {
