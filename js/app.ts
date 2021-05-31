@@ -21,11 +21,19 @@ import { EgwApp } from '../../api/js/jsapi/egw_app';
 import {et2_createWidget} from "../../api/js/etemplate/et2_core_widget";
 import {et2_dialog} from "../../api/js/etemplate/et2_widget_dialog";
 import {et2_button} from "../../api/js/etemplate/et2_widget_button";
+import { widget } from 'jquery';
 
 class ExampleApp extends EgwApp
-{
+{	
+	
 	// app name
 	readonly appname = 'example';
+	
+	//Some variables for calculator
+	public previousOperand : string;
+	public currentOperand : string;
+	public operator : string;
+	public result : string;
 
 	/**
 	 * app js initialization stage
@@ -33,6 +41,11 @@ class ExampleApp extends EgwApp
 	constructor(appname: string)
 	{
 		super(appname);
+
+		this.previousOperand = '';
+		this.currentOperand = '';
+		this.operator = '';
+		this.result = '';
 	}
 
 	/**
@@ -90,6 +103,8 @@ class ExampleApp extends EgwApp
 	 * @param _node
 	 * @param _widget
 	 */
+
+	
 	calculator(_node : HTMLButtonElement, _widget : et2_button)
 	{
 		et2_createWidget("dialog",{
@@ -112,14 +127,120 @@ class ExampleApp extends EgwApp
 	 * @param _node
 	 * @param _widget
 	 */
-	calculatorNumber(_node : HTMLButtonElement, _widget : et2_button)
-	{
+
+	calculatorUpdateDisplay(_node : HTMLButtonElement, _widget : et2_button) {
+
 		// cant use this.et2 in dialog
 		const et2 = _widget.getInstanceManager().widgetContainer;
-		let value = et2.getValueById('value');
-		value += _widget.id.substr(4);	// id: "num_0"
-		et2.setValueById('value', value);
+		et2.setValueById('currentOperand', this.currentOperand);
+		et2.setValueById('previousOperand', this.previousOperand + this.operator);
 	}
+
+
+	calculatorNumber(_node : HTMLButtonElement, _widget : et2_button) 
+	{	
+		// cant use this.et2 in dialog
+		const et2 = _widget.getInstanceManager().widgetContainer;
+		this.currentOperand = et2.getValueById('currentOperand');
+		
+		let value = _widget.id.substr(4);
+
+		//Only 1 '.' allowed
+		if (value === '.' && this.currentOperand.includes('.')) //includes is red underlined but works?
+			return;
+
+		this.currentOperand += value;
+
+		this.calculatorUpdateDisplay(_node,_widget);
+	}		
+
+	chooseOperation(_node : HTMLButtonElement, _widget : et2_button) {
+
+		const et2 = _widget.getInstanceManager().widgetContainer;
+		let value = et2.getValueById('currentOperand');
+
+		this.currentOperand = value;
+		console.log("this.currentOperand: " + this.currentOperand);
+
+		let operator_id = _widget.id;
+		let operator;
+
+		switch (operator_id) {
+			case 'add':
+				operator = '+';
+				break;
+			case 'sub':
+				operator = '-';
+				break;
+			case 'mul':
+				operator = '*';
+				break;
+			case 'div':
+				operator = '/';
+				break;
+			default:
+				console.log("not an allowed operator");
+				return;	
+		}
+
+		this.operator = operator;
+
+		//previousOperand stores the value and current operand is reset
+		if (this.previousOperand === '') {
+
+			this.previousOperand = this.currentOperand;
+			this.currentOperand = '';
+			this.calculatorUpdateDisplay(_node,_widget);
+		}
+		else if(this.currentOperand === '') { 
+			this.calculatorUpdateDisplay(_node,_widget); //so it displays the operator
+			return;
+		}
+		else this.calculate(_node, _widget);
+		
+	}
+
+	calculate (_node : HTMLButtonElement, _widget : et2_button) {
+
+		//Change strings to numbers
+		let previousOperand = parseFloat(this.previousOperand);
+		let currentOperand = parseFloat(this.currentOperand);
+
+		//Fix issue: '' has no number it can convert to.
+		if(previousOperand == NaN) {
+			return
+		}
+		if(currentOperand == NaN) {
+			return
+		}
+
+		//computes current and previous based on operator and set previosuValue to that value
+		let result;
+		switch (this.operator) {
+			case "+":
+				result = previousOperand + currentOperand;
+				break;
+			case "-":
+				result = previousOperand - currentOperand;
+				break;
+			case "*":
+				result = previousOperand * currentOperand;
+				break;
+			case "/":
+				result = previousOperand / currentOperand;
+				break;
+			default:
+				console.log("Operation failed");
+				return;
+		}
+
+		this.currentOperand = '';
+		this.previousOperand = result.toString();
+	
+		//update the Display to show result on Screen
+		this.calculatorUpdateDisplay(_node, _widget);
+	}
+	
 
 	/**
 	 * Act on Clear button
@@ -128,10 +249,13 @@ class ExampleApp extends EgwApp
 	 * @param _widget
 	 */
 	calculatorClear(_node : HTMLButtonElement, _widget : et2_button)
-	{
-		const et2 = _widget.getInstanceManager().widgetContainer;
-		et2.setValueById('value', '');
-	}
+	{	
+		this.currentOperand = '';
+		this.previousOperand = '';
+		this.operator = '';
+		this.calculatorUpdateDisplay(_node, _widget);
+	}	
 }
 
 app.classes.example = ExampleApp;
+
