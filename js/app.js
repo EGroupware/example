@@ -12,10 +12,12 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -41,6 +43,10 @@ var ExampleApp = /** @class */ (function (_super) {
         var _this = _super.call(this, appname) || this;
         // app name
         _this.appname = 'example';
+        _this.previousOperand = '';
+        _this.currentOperand = '';
+        _this.operator = '';
+        _this.result = '';
         return _this;
     }
     /**
@@ -110,12 +116,95 @@ var ExampleApp = /** @class */ (function (_super) {
      * @param _node
      * @param _widget
      */
+    ExampleApp.prototype.calculatorUpdateDisplay = function (_node, _widget) {
+        // cant use this.et2 in dialog
+        var et2 = _widget.getInstanceManager().widgetContainer;
+        et2.setValueById('currentOperand', this.currentOperand);
+        et2.setValueById('previousOperand', this.previousOperand + this.operator);
+    };
     ExampleApp.prototype.calculatorNumber = function (_node, _widget) {
         // cant use this.et2 in dialog
         var et2 = _widget.getInstanceManager().widgetContainer;
-        var value = et2.getValueById('value');
-        value += _widget.id.substr(4); // id: "num_0"
-        et2.setValueById('value', value);
+        this.currentOperand = et2.getValueById('currentOperand');
+        var value = _widget.id.substr(4);
+        //Only 1 '.' allowed
+        if (value === '.' && this.currentOperand.includes('.')) //includes is red underlined but works?
+            return;
+        this.currentOperand += value;
+        this.calculatorUpdateDisplay(_node, _widget);
+    };
+    ExampleApp.prototype.chooseOperation = function (_node, _widget) {
+        var et2 = _widget.getInstanceManager().widgetContainer;
+        var value = et2.getValueById('currentOperand');
+        this.currentOperand = value;
+        console.log("this.currentOperand: " + this.currentOperand);
+        var operator_id = _widget.id;
+        var operator;
+        switch (operator_id) {
+            case 'add':
+                operator = '+';
+                break;
+            case 'sub':
+                operator = '-';
+                break;
+            case 'mul':
+                operator = '*';
+                break;
+            case 'div':
+                operator = '/';
+                break;
+            default:
+                console.log("not an allowed operator");
+                return;
+        }
+        this.operator = operator;
+        //previousOperand stores the value and current operand is reset
+        if (this.previousOperand === '') {
+            this.previousOperand = this.currentOperand;
+            this.currentOperand = '';
+            this.calculatorUpdateDisplay(_node, _widget);
+        }
+        else if (this.currentOperand === '') {
+            this.calculatorUpdateDisplay(_node, _widget); //so it displays the operator
+            return;
+        }
+        else
+            this.calculate(_node, _widget);
+    };
+    ExampleApp.prototype.calculate = function (_node, _widget) {
+        //Change strings to numbers
+        var previousOperand = parseFloat(this.previousOperand);
+        var currentOperand = parseFloat(this.currentOperand);
+        //Fix issue: '' has no number it can convert to.
+        if (previousOperand == NaN) {
+            return;
+        }
+        if (currentOperand == NaN) {
+            return;
+        }
+        //computes current and previous based on operator and set previosuValue to that value
+        var result;
+        switch (this.operator) {
+            case "+":
+                result = previousOperand + currentOperand;
+                break;
+            case "-":
+                result = previousOperand - currentOperand;
+                break;
+            case "*":
+                result = previousOperand * currentOperand;
+                break;
+            case "/":
+                result = previousOperand / currentOperand;
+                break;
+            default:
+                console.log("Operation failed");
+                return;
+        }
+        this.currentOperand = '';
+        this.previousOperand = result.toString();
+        //update the Display to show result on Screen
+        this.calculatorUpdateDisplay(_node, _widget);
     };
     /**
      * Act on Clear button
@@ -124,8 +213,10 @@ var ExampleApp = /** @class */ (function (_super) {
      * @param _widget
      */
     ExampleApp.prototype.calculatorClear = function (_node, _widget) {
-        var et2 = _widget.getInstanceManager().widgetContainer;
-        et2.setValueById('value', '');
+        this.currentOperand = '';
+        this.previousOperand = '';
+        this.operator = '';
+        this.calculatorUpdateDisplay(_node, _widget);
     };
     return ExampleApp;
 }(egw_app_1.EgwApp));
