@@ -129,7 +129,7 @@ class ExampleApp extends EgwApp
 	 */
 
 	calculatorUpdateDisplay(_node : HTMLButtonElement, _widget : et2_button) {
-
+			
 		// cant use this.et2 in dialog
 		const et2 = _widget.getInstanceManager().widgetContainer;
 		et2.setValueById('currentOperand', this.currentOperand);
@@ -137,15 +137,15 @@ class ExampleApp extends EgwApp
 	}
 
 
-	calculatorNumber(_node : HTMLButtonElement, _widget : et2_button) 
-	{	
+	calculatorNumber(_node : HTMLButtonElement, _widget : et2_button) {	
+
 		// cant use this.et2 in dialog
 		const et2 = _widget.getInstanceManager().widgetContainer;
 		this.currentOperand = et2.getValueById('currentOperand');
 		
 		let value = _widget.id.substr(4);
 
-		//Only 1 '.' allowed
+		//Only 1 '.' allowed.
 		if (value === '.' && this.currentOperand.includes('.')) //includes is red underlined but works?
 			return;
 
@@ -233,8 +233,9 @@ class ExampleApp extends EgwApp
 				return;
 		}
 
-		this.currentOperand = '';
-		this.previousOperand = result.toString();
+		this.currentOperand = result.toString();
+		this.previousOperand = '';
+		this.operator = '';
 	
 		//update the Display to show result on Screen
 		this.calculatorUpdateDisplay(_node, _widget);

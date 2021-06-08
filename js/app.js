@@ -127,7 +127,7 @@ var ExampleApp = /** @class */ (function (_super) {
         var et2 = _widget.getInstanceManager().widgetContainer;
         this.currentOperand = et2.getValueById('currentOperand');
         var value = _widget.id.substr(4);
-        //Only 1 '.' allowed
+        //Only 1 '.' allowed.
         if (value === '.' && this.currentOperand.includes('.')) //includes is red underlined but works?
             return;
         this.currentOperand += value;
@@ -201,8 +201,9 @@ var ExampleApp = /** @class */ (function (_super) {
                 console.log("Operation failed");
                 return;
         }
-        this.currentOperand = '';
-        this.previousOperand = result.toString();
+        this.currentOperand = result.toString();
+        this.previousOperand = '';
+        this.operator = '';
         //update the Display to show result on Screen
         this.calculatorUpdateDisplay(_node, _widget);
     };
