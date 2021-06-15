@@ -9,7 +9,7 @@
  * TypeScript Calculator
  */
  div.exampleCalculator {
-   background-color: #505050;
+   background-color: #1C1C1C;
    color: #D9D9D9;
  }
 
@@ -19,27 +19,38 @@ div.exampleCalculator #_value {
 div.exampleCalculator button {
   background-color: #D4D4D2;
   color: #1C1C1C;
-  width: 90%;
+  width: 100%;
   font-family: Helvetica, sans-serif;
   font-size: 20px;
-  text-align: center;
+  align-content: center;
   margin: auto;
   /*border-radius: 30px 30px 30px 30px; */
-  border-color:1px solid #1C1C1C;
+  border-color: solid #505050;
 
   outline: none;
 }
 div.exampleCalculator td[colspan="3"] button {
-  width: 97%;
+  width: 100%;
 }
 div.exampleCalculator td[colspan="2"] button {
-  width: 97%;
+  width: 100%;
 }
 div.exampleCalculator .operator button {
   background-color: #FF9500;
   color: white;
 }
-div.exampleCalculator #textbox {
+div.exampleCalculator .et2_textbox {
+  height: 20px;
   background-color: #1C1C1C;
   color: white;
+  border: none;
+  text-align: right;
+  font-family: Helvetica, sans-serif;
+  font-size: 30px;
+  font-weight: 100;
 }
+
+body > div.ui-dialog {
+  
+}
+

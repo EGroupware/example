@@ -36,6 +36,7 @@ var et2_core_widget_1 = require("../../api/js/etemplate/et2_core_widget");
 var et2_widget_dialog_1 = require("../../api/js/etemplate/et2_widget_dialog");
 var ExampleApp = /** @class */ (function (_super) {
     __extends(ExampleApp, _super);
+    //public result : string;
     /**
      * app js initialization stage
      */
@@ -46,8 +47,8 @@ var ExampleApp = /** @class */ (function (_super) {
         _this.previousOperand = '';
         _this.currentOperand = '';
         _this.operator = '';
-        _this.result = '';
         return _this;
+        //this.result = '';
     }
     /**
      * et2 object is ready to use
@@ -201,8 +202,8 @@ var ExampleApp = /** @class */ (function (_super) {
                 console.log("Operation failed");
                 return;
         }
-        this.currentOperand = result.toString();
-        this.previousOperand = '';
+        this.currentOperand = '';
+        this.previousOperand = result.toString();
         this.operator = '';
         //update the Display to show result on Screen
         this.calculatorUpdateDisplay(_node, _widget);

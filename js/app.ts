@@ -33,7 +33,7 @@ class ExampleApp extends EgwApp
 	public previousOperand : string;
 	public currentOperand : string;
 	public operator : string;
-	public result : string;
+	//public result : string;
 
 	/**
 	 * app js initialization stage
@@ -45,7 +45,7 @@ class ExampleApp extends EgwApp
 		this.previousOperand = '';
 		this.currentOperand = '';
 		this.operator = '';
-		this.result = '';
+		//this.result = '';
 	}
 
 	/**
@@ -233,8 +233,8 @@ class ExampleApp extends EgwApp
 				return;
 		}
 
-		this.currentOperand = result.toString();
-		this.previousOperand = '';
+		this.currentOperand = '';
+		this.previousOperand = result.toString();
 		this.operator = '';
 	
 		//update the Display to show result on Screen
