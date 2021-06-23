@@ -33,7 +33,6 @@ class ExampleApp extends EgwApp
 	public previousOperand : string;
 	public currentOperand : string;
 	public operator : string;
-	//public result : string;
 
 	/**
 	 * app js initialization stage
@@ -45,7 +44,6 @@ class ExampleApp extends EgwApp
 		this.previousOperand = '';
 		this.currentOperand = '';
 		this.operator = '';
-		//this.result = '';
 	}
 
 	/**
@@ -136,7 +134,7 @@ class ExampleApp extends EgwApp
 		et2.setValueById('previousOperand', this.previousOperand + this.operator);
 	}
 
-
+	//Apend Number to currentOperand
 	calculatorNumber(_node : HTMLButtonElement, _widget : et2_button) {	
 
 		// cant use this.et2 in dialog
@@ -154,6 +152,7 @@ class ExampleApp extends EgwApp
 		this.calculatorUpdateDisplay(_node,_widget);
 	}		
 
+	//Choose a operation
 	chooseOperation(_node : HTMLButtonElement, _widget : et2_button) {
 
 		const et2 = _widget.getInstanceManager().widgetContainer;
@@ -213,7 +212,7 @@ class ExampleApp extends EgwApp
 			return
 		}
 
-		//computes current and previous based on operator and set previosuValue to that value
+		//computes current and previous based on operator and set previousValue to that value
 		let result;
 		switch (this.operator) {
 			case "+":
