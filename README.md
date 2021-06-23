@@ -18,7 +18,7 @@ First of all we start of by creating a calculator.xet file which contains our nu
 
 In addition we create a app.css file to pretty up our calculator.
 
-(picture here)
+![image](https://user-images.githubusercontent.com/79371575/123094730-8979a680-d42d-11eb-891a-9149aff5bc8c.png)
 
 To call our calculator, we add a button in the index.xet file. The button has an onclick event attached, which will call the "calculator" method in our app.ts file. The calculator method creates a dialog. In this dialog our calculator will be displayed.
 
