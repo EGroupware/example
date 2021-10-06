@@ -62,7 +62,7 @@ class Ui
 				$content = $this->bo->init();
 			}
 		}
-		else
+		elseif (!empty($content['button']))
 		{
 			$button = key($content['button']);
 			unset($content['button']);
