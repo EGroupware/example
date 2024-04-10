@@ -9,7 +9,7 @@
 * create the following template under [templates/default/edit.xet](https://github.com/EGroupware/example/tree/step2/templates/default)
 ```
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE overlay PUBLIC "-//EGroupware GmbH//eTemplate 2//EN" "http://www.egroupware.org/etemplate2.dtd">
+<!DOCTYPE overlay PUBLIC "-//EGroupware GmbH//eTemplate 2.0//EN" "https://www.egroupware.org/etemplate2.0.dtd">
 <overlay>
 	<template id="example.edit" template="" lang="" group="0" version="19.1">
 		<grid width="100%">
@@ -19,25 +19,26 @@
 			</columns>
 			<rows>
 				<row>
-					<description for="hostname" value="Hostname"/>
-					<textbox id="hostname" tabindex="1" maxlength="64" class="et2_fullWidth" />
+					<et2-description  for="hostname" value="Hostname"></et2-description>
+					<et2-textbox  id="hostname" tabindex="1" maxlength="64" ></et2-textbox>
 				</row>
 				<row>
-					<description for="description" value="Description"/>
-					<textbox id="description" tabindex="2" class="et2_fullWidth" rows="7"/>
+					<et2-description  for="description" value="Description"></et2-description>
+					<et2-textarea  id="description" tabindex="2" rows="7"></et2-textarea>
 				</row>
 				<row>
-					<hbox span="all" width="100%">
-						<button accesskey="s" label="Save" id="button[save]"/>
-						<button label="Apply" id="button[apply]"/>
-						<button label="Cancel" id="button[cancel]" onclick="window.close(); return false;"/>
-						<button align="right" label="Delete" id="button[delete]" onclick="et2_dialog.confirm(widget,'Do you really want to delete this host?','Delete')"/>
-					</hbox>
+					<et2-hbox  span="all" width="100%">
+						<et2-button  accesskey="s" label="Save" id="button[save]"></et2-button>
+						<et2-button  label="Apply" id="button[apply]"></et2-button>
+						<et2-button  label="Cancel" id="button[cancel]" onclick="window.close(); return false;"></et2-button>
+						<et2-button  align="right" label="Delete" id="button[delete]" onclick="et2_dialog.confirm(widget,'Do you really want to delete this host?','Delete')"></et2-button>
+					</et2-hbox>
 				</row>
 			</rows>
 		</grid>
 	</template>
 </overlay>
+
 ```
 * and some code in [src/Ui.php](https://github.com/EGroupware/example/tree/step2/src/Ui.php) to call it
 ```
