@@ -34,5 +34,5 @@ $setup_info['example']['hooks']['search_link'] = Example\Hooks::class.'::search_
 /* Dependencies for this app to work */
 $setup_info['example']['depends'][] = array(
 	 'appname' => 'api',
-	 'versions' => Array('19.1')
+	 'versions' => Array('23.1')
 );

@@ -8,13 +8,9 @@
  * @license http://opensource.org/licenses/gpl-license.php GPL - GNU General Public License
  */
 
-/*egw:uses
-	/api/js/jsapi/egw_app.js
- */
-
+import {app} from "../../api/js/jsapi/egw_global";
 import { EgwApp } from '../../api/js/jsapi/egw_app';
-import {et2_createWidget} from "../../api/js/etemplate/et2_core_widget";
-import {et2_dialog} from "../../api/js/etemplate/et2_widget_dialog";
+import {Et2Dialog} from "../../api/js/etemplate/Et2Dialog/Et2Dialog";
 
 class ExampleApp extends EgwApp
 {
@@ -58,24 +54,31 @@ class ExampleApp extends EgwApp
 			}
 		};
 		var buttons = [
-			{text: this.egw.lang("close"), id: "close", image: "close"},
-			{text: this.egw.lang("edit"), id: "edit", image: "edit"}
+			{label: this.egw.lang("close"), id: "close", image: "close"},
+			{label: this.egw.lang("edit"), id: "edit", image: "edit"}
 		];
 		var self = this;
 
-		et2_createWidget("dialog",{
-			callback: function(button){
+		// Pass egw in the constructor
+		const dialog = new Et2Dialog(this.egw);
+
+		// Set attributes.  They can be set in any way, but this is convenient.
+		dialog.transformAttributes({
+			callback: button => {
 				if (button == 'edit')
 				{
 					this.egw.open(values.content.host_id, self.appname, 'view');
 				}
-			}.bind(this),
+			},
 			title: 'view host',
 			buttons: buttons,
-			type: et2_dialog.PLAIN_MESSAGE,
+			type: Et2Dialog.PLAIN_MESSAGE,
 			template: this.egw.webserverUrl+'/example/templates/default/edit.xet',
+			width: 400,
 			value: values
 		});
+		// Add to DOM, dialog will auto-open
+		document.body.appendChild(dialog);
 	}
 }
 

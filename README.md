@@ -75,24 +75,31 @@ The ```view``` method get's called by our new view action:
 			}
 		};
 		var buttons = [
-			{text: this.egw.lang("close"), id: "close", image: "close"},
-			{text: this.egw.lang("edit"), id: "edit", image: "edit"}
+			{label: this.egw.lang("close"), id: "close", image: "close"},
+			{label: this.egw.lang("edit"), id: "edit", image: "edit"}
 		];
 		var self = this;
 
-		et2_createWidget("dialog",{
-			callback: function(button){
+		// Pass egw in the constructor
+		const dialog = new Et2Dialog(this.egw);
+
+		// Set attributes.  They can be set in any way, but this is convenient.
+		dialog.transformAttributes({
+			callback: button => {
 				if (button == 'edit')
 				{
 					this.egw.open(values.content.host_id, self.appname, 'view');
 				}
-			}.bind(this),
+			},
 			title: 'view host',
 			buttons: buttons,
-			type: et2_dialog.PLAIN_MESSAGE,
+			type: Et2Dialog.PLAIN_MESSAGE,
 			template: this.egw.webserverUrl+'/example/templates/default/edit.xet',
+			width: 400,
 			value: values
 		});
+		// Add to DOM, dialog will auto-open
+		document.body.appendChild(dialog);
 	}
 }
 
