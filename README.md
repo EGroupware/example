@@ -115,9 +115,11 @@ The link system abstracts EGroupware entries, by addressing them via their app-n
 
 * To be able to link or attach files in our example app, we have to add some more widgets to our edit popup:
 ```
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE overlay PUBLIC "-//EGroupware GmbH//eTemplate 2.0//EN" "https://www.egroupware.org/etemplate2.0.dtd">
 <overlay>
 	<template id="example.edit.notes" template="" lang="" group="0" version="19.1.001">
-		<textbox multiline="true" id="host_description" rows="14" cols="70" class="et2_fullWidth"/>
+		<et2-textarea  id="host_description" rows="14" cols="70"></et2-textarea>
 	</template>
 	<template id="example.edit.links" template="" lang="" group="0" version="19.1.001">
 		<grid width="100%" overflow="auto">
@@ -126,13 +128,13 @@ The link system abstracts EGroupware entries, by addressing them via their app-n
 			</columns>
 			<rows>
 				<row>
-					<link-to id="link_to"/>
+					<et2-link-to  id="link_to"></et2-link-to>
 				</row>
 				<row class="th">
-					<description value="Existing links"/>
+					<et2-description  value="Existing links"></et2-description>
 				</row>
 				<row>
-					<link-list id="link_to"/>
+					<et2-link-list  id="link_to"></et2-link-list>
 				</row>
 			</rows>
 		</grid>
@@ -145,11 +147,11 @@ The link system abstracts EGroupware entries, by addressing them via their app-n
 			</columns>
 			<rows>
 				<row>
-					<description for="host_name" value="Hostname"/>
-					<textbox id="host_name" tabindex="1" maxlength="64" class="et2_fullWidth" />
+					<et2-description  for="host_name" value="Hostname"></et2-description>
+					<et2-textbox  id="host_name" tabindex="1" maxlength="64" ></et2-textbox>
 				</row>
 				<row>
-					<tabbox id="tabs" class="et2_nowrap" width="100%" span="all" tab_height="200">
+					<et2-tabbox  id="tabs" class="et2_nowrap" width="100%" span="all" tabHeight="200">
 						<tabs>
 							<tab id="notes" label="Description"/>
 							<tab id="links" label="Links"/>
@@ -158,7 +160,7 @@ The link system abstracts EGroupware entries, by addressing them via their app-n
 							<template id="example.edit.notes"/>
 							<template id="example.edit.links"/>
 						</tabpanels>
-					</tabbox>
+					</et2-tabbox>
 				</row>
 				<!-- the rest of the file is unchanged -->
 ```

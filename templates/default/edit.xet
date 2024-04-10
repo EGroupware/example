@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE overlay PUBLIC "-//EGroupware GmbH//eTemplate 2//EN" "http://www.egroupware.org/etemplate2.dtd">
+<!DOCTYPE overlay PUBLIC "-//EGroupware GmbH//eTemplate 2.0//EN" "https://www.egroupware.org/etemplate2.0.dtd">
 <overlay>
 	<template id="example.edit.notes" template="" lang="" group="0" version="19.1.001">
-		<textbox multiline="true" id="host_description" rows="14" cols="70" class="et2_fullWidth"/>
+		<et2-textarea  id="host_description" rows="14" cols="70"></et2-textarea>
 	</template>
 	<template id="example.edit.links" template="" lang="" group="0" version="19.1.001">
 		<grid width="100%" overflow="auto">
@@ -11,13 +11,13 @@
 			</columns>
 			<rows>
 				<row>
-					<link-to id="link_to"/>
+					<et2-link-to  id="link_to"></et2-link-to>
 				</row>
 				<row class="th">
-					<description value="Existing links"/>
+					<et2-description  value="Existing links"></et2-description>
 				</row>
 				<row>
-					<link-list id="link_to"/>
+					<et2-link-list  id="link_to"></et2-link-list>
 				</row>
 			</rows>
 		</grid>
@@ -30,11 +30,11 @@
 			</columns>
 			<rows>
 				<row>
-					<description for="host_name" value="Hostname"/>
-					<textbox id="host_name" tabindex="1" maxlength="64" class="et2_fullWidth" />
+					<et2-description  for="host_name" value="Hostname"></et2-description>
+					<et2-textbox  id="host_name" tabindex="1" maxlength="64" ></et2-textbox>
 				</row>
 				<row>
-					<tabbox id="tabs" class="et2_nowrap" width="100%" span="all" tab_height="200">
+					<et2-tabbox  id="tabs" class="et2_nowrap" width="100%" span="all" tabHeight="200">
 						<tabs>
 							<tab id="notes" label="Description"/>
 							<tab id="links" label="Links"/>
@@ -43,32 +43,31 @@
 							<template id="example.edit.notes"/>
 							<template id="example.edit.links"/>
 						</tabpanels>
-					</tabbox>
+					</et2-tabbox>
 				</row>
 				<row disabled="!@host_id">
-					<description value="Creator"/>
-					<hbox width="100%">
-						<select-account id="host_creator" readonly="true"/>
-						<date-time id="host_created" readonly="true" align="right"/>
-					</hbox>
+					<et2-description  value="Creator"></et2-description>
+					<et2-hbox  width="100%">
+						<et2-select-account  id="host_creator" readonly="true"></et2-select-account>
+						<et2-date-time  id="host_created" readonly="true" align="right"></et2-date-time>
+					</et2-hbox>
 				</row>
 				<row disabled="!@host_id">
-					<description value="Last modified"/>
-					<hbox width="100%">
-						<select-account id="host_modifier" readonly="true"/>
-						<date-time id="host_modified" readonly="true" align="right"/>
-					</hbox>
+					<et2-description  value="Last modified"></et2-description>
+					<et2-hbox  width="100%">
+						<et2-select-account  id="host_modifier" readonly="true"></et2-select-account>
+						<et2-date-time  id="host_modified" readonly="true" align="right"></et2-date-time>
+					</et2-hbox>
 				</row>
 				<row>
-					<hbox span="all" width="100%">
-						<button accesskey="s" label="Save" id="button[save]"/>
-						<button label="Apply" id="button[apply]"/>
-						<button label="Cancel" id="button[cancel]" onclick="window.close(); return false;"/>
-						<button align="right" label="Delete" id="button[delete]" onclick="et2_dialog.confirm(widget,'Do you really want to delete this host?','Delete')"/>
-					</hbox>
+					<et2-hbox  span="all" width="100%">
+						<et2-button  accesskey="s" label="Save" id="button[save]"></et2-button>
+						<et2-button  label="Apply" id="button[apply]"></et2-button>
+						<et2-button  label="Cancel" id="button[cancel]" onclick="window.close(); return false;"></et2-button>
+						<et2-button  align="right" label="Delete" id="button[delete]" onclick="et2_dialog.confirm(widget,'Do you really want to delete this host?','Delete')"></et2-button>
+					</et2-hbox>
 				</row>
 			</rows>
 		</grid>
 	</template>
 </overlay>
-
