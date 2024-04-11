@@ -16,7 +16,7 @@
 * site configuration
 * categories
 
-#### list of ressources / further reading:
+#### list of resources / further reading:
 
 * [wiki of main egroupware repo](https://github.com/EGroupware/egroupware/wiki)
 * server-side API is in [api/src](https://github.com/EGroupware/egroupware/tree/master/api/src) and it makes sense to get familiar with the clases in directly in the src directory

@@ -6,7 +6,7 @@
  * @author Ralf Becker <rb-AT-egroupware.org>
  * @package example
  * @subpackage setup
- * @copyright (c) 2019 by Ralf Becker <rb-AT-egroupware.org>
+ * @copyright (c) 2023 by Ralf Becker <rb-AT-egroupware.org>
  * @license http://opensource.org/licenses/gpl-license.php GPL - GNU General Public License
  */
 
@@ -14,17 +14,18 @@ namespace EGroupware\Example;
 
 use EGroupware\Api;
 
-class Bo extends Api\Storage\Base
+class Bo extends Api\Storage
 {
 	const APP = 'example';
 	const TABLE = 'egw_example';
+	const EXTRA_TABLE = 'egw_example_extra';
 
 	/**
 	 * Constructor
 	 */
 	public function __construct()
 	{
-		parent::__construct(self::APP, self::TABLE);
+		parent::__construct(self::APP, self::TABLE, self::EXTRA_TABLE, '', '_extra_name', '_extra_value');
 	}
 
 	/**
@@ -87,7 +88,7 @@ class Bo extends Api\Storage\Base
 	 * Is called as hook to participate in the linking
 	 *
 	 * @param int|array $entry int ts_id or array with timesheet entry
-	 * @return string/boolean string with title, null if timesheet not found, false if no perms to view it
+	 * @return string|boolean string with title, null if timesheet not found, false if no perms to view it
 	 */
 	function link_title( $entry )
 	{

@@ -25,5 +25,16 @@ $phpgw_baseline = array(
 		'fk' => array(),
 		'ix' => array(),
 		'uc' => array()
+	),
+	'egw_example_extra' => array(
+		'fd' => array(
+			'host_id' => array('type' => 'int','precision' => '4','nullable' => False),
+			'host_extra_name' => array('type' => 'varchar','meta' => 'cfname','precision' => '64','nullable' => False),
+			'host_extra_value' => array('type' => 'text','meta' => 'cfvalue','nullable' => False)
+		),
+		'pk' => array(),
+		'fk' => array(),
+		'ix' => array(),
+		'uc' => array(array('host_id','host_extra_name'))
 	)
 );
