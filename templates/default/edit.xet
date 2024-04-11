@@ -34,7 +34,7 @@
 					<et2-textbox  id="host_name" tabindex="1" maxlength="64" ></et2-textbox>
 				</row>
 				<row>
-					<et2-tabbox  id="tabs" class="et2_nowrap" width="100%" span="all" tabHeight="200">
+					<et2-tabbox  id="tabs" class="et2_nowrap" width="100%" span="all" tabHeight="240">
 						<tabs>
 							<tab id="notes" label="Description"/>
 							<tab id="links" label="Links"/>
