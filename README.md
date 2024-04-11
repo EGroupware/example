@@ -66,9 +66,9 @@ $setup_info['example']['hooks']['sidebox_menu'] = Example\Hooks::class.'::all_ho
 After a reload (F5) or new login we are be able to add our first custom fields, as shown in the screenshot:
 ![step7-cfs](https://raw.githubusercontent.com/wiki/EGroupware/example/images/step7-cfs.png)
 
-In the above screenshot we add a singe custom-field named `log` with label `Log` and of type `Formatted text (HTML)` to be shown in tab `Log`. 
+In the above screenshot we add a single custom-field named `log` with label `Log` and of type `Formatted text (HTML)` to be shown in tab `Log`. 
 
-If you don't specify a tab, the custom-field will be show by default in a tab called `Custom fields`.
+If you don't specify a tab, the custom-field will be shown by default in a tab called `Custom fields`.
 
 The order of the fields (in each tab) is specified by the value in `Order`. Some custom-field types allow to specify additional options, length and number of rows.
 
