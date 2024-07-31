@@ -6,18 +6,16 @@
  * @author Ralf Becker <rb-AT-egroupware.org>
  * @package example
  * @subpackage setup
- * @copyright (c) 2023 by Ralf Becker <rb-AT-egroupware.org>
+ * @copyright (c) 2023-24 by Ralf Becker <rb-AT-egroupware.org>
  * @license http://opensource.org/licenses/gpl-license.php GPL - GNU General Public License
  */
-
-use EGroupware\Example;
 
 $setup_info['example']['name']      = 'example';
 $setup_info['example']['version']   = '23.1';
 $setup_info['example']['app_order'] = 5;
 $setup_info['example']['enable']    = 1;
 $setup_info['example']['tables']    = array('egw_example','egw_example_extra');
-$setup_info['example']['index']     = Example\Bo::APP.'.'.Example\Ui::class.'.index&ajax=true';
+$setup_info['example']['index']     = 'example.EGroupware\\Developer\\Ui.index&ajax=true';
 
 $setup_info['example']['author'] =
 $setup_info['example']['maintainer'] = array(
@@ -29,9 +27,9 @@ $setup_info['example']['description'] =
 'Just an example app to start developing with.';
 
 // Hooks we implement
-$setup_info['example']['hooks']['search_link'] = Example\Hooks::class.'::search_link';
-$setup_info['example']['hooks']['admin'] = Example\Hooks::class.'::all_hooks';
-$setup_info['example']['hooks']['sidebox_menu'] = Example\Hooks::class.'::all_hooks';
+$setup_info['example']['hooks']['search_link'] = 'EGroupware\\Developer\\Hooks::search_link';
+$setup_info['example']['hooks']['admin'] = 'EGroupware\\Developer\\Hooks::all_hooks';
+$setup_info['example']['hooks']['sidebox_menu'] = 'EGroupware\\Developer\\Hooks::all_hooks';
 
 /* Dependencies for this app to work */
 $setup_info['example']['depends'][] = array(
