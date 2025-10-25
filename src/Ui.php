@@ -44,9 +44,9 @@ class Ui
 	/**
 	 * Edit a host
 	 *
-	 * @param array $content =null
+	 * @param ?array $content =null
 	 */
-	public function edit(array $content=null)
+	public function edit(?array $content=null)
 	{
 		if (!is_array($content))
 		{
@@ -130,9 +130,9 @@ class Ui
 	/**
 	 * Index
 	 *
-	 * @param array $content =null
+	 * @param ?array $content =null
 	 */
-	public function index(array $content=null)
+	public function index(?array $content=null)
 	{
 		if (!is_array($content) || empty($content['nm']))
 		{
