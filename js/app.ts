@@ -22,6 +22,14 @@ import {Et2Dialog} from "../../api/js/etemplate/Et2Dialog/Et2Dialog";
 class ExampleApp extends EgwApp
 {
 	/**
+	 * Row fields holding an account whose grants decide whether a pushed change
+	 * is any of our business
+	 *
+	 * @var string[]
+	 */
+	protected push_grant_fields = ['host_creator'];
+
+	/**
 	 * Constructor
 	 */
 	constructor()

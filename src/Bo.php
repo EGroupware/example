@@ -73,12 +73,16 @@ class Bo extends Api\Storage
 	public function save($keys = null, $extra_where = null)
 	{
 		$this->data_merge($keys);
+		$is_new = empty($this->data['host_id']);
+		// What is on record for this host.  The dialog sends only what it shows, so
+		// this is where the owner - and anything else it does not carry - comes from.
+		$stored = $is_new ? [] : $this->stored();
 
 		// Changing an existing host needs edit rights on it.  The user interface does
 		// not offer the attempt, so reaching here means something went around it.
 		// Check against the stored host, not the submitted one: the dialog has no
 		// owner field, and a client must not be able to decide who owns an entry.
-		if (!empty($this->data['host_id']) && !$this->check_perms(Api\Acl::EDIT, $this->stored()))
+		if (!$is_new && !$this->check_perms(Api\Acl::EDIT, $stored))
 		{
 			throw new Api\Exception\NoPermission();
 		}
@@ -90,12 +94,17 @@ class Bo extends Api\Storage
 		$this->data['host_modifier'] = $GLOBALS['egw_info']['user']['account_id'];
 		$this->data['host_modified'] = $this->now;
 
-		if (($error = parent::save(null, $extra_where)) == 0 &&
+		if (($error = parent::save(null, $extra_where)) == 0)
+		{
 			// A new host cannot be linked before it exists, so the dialog holds its
 			// links until now and hands them over as link_to[to_id].
-			!empty($keys['link_to']['to_id']) && is_array($keys['link_to']['to_id']))
-		{
-			Api\Link::link(self::APP, $this->data['host_id'], $keys['link_to']['to_id']);
+			if (!empty($keys['link_to']['to_id']) && is_array($keys['link_to']['to_id']))
+			{
+				Api\Link::link(self::APP, $this->data['host_id'], $keys['link_to']['to_id']);
+			}
+			// $stored fills in what the dialog did not send - host_creator above all,
+			// since that is what the receiving browsers decide on
+			$this->push($is_new ? 'add' : 'edit', $this->data + $stored);
 		}
 		return $error;
 	}
@@ -129,6 +138,7 @@ class Bo extends Api\Storage
 		if (($deleted = parent::delete($keys)) && $host_id)
 		{
 			Api\Link::unlink(0, self::APP, $host_id);
+			$this->push('delete', $host);
 		}
 		return $deleted;
 	}
@@ -266,5 +276,27 @@ class Bo extends Api\Storage
 		$host = parent::read($keys, $extra_cols, $join);
 
 		return $host && $this->check_perms(Api\Acl::READ, $host) ? $host : false;
+	}
+
+	/**
+	 * Tell everyone else's open windows that a host changed
+	 *
+	 * Sent to every logged-in user, because working out who can see it would cost more
+	 * than sending it: each browser decides for itself, by checking the account named
+	 * in "acl" against the rights that user has been granted.  That is also why the
+	 * message carries no data beyond what is needed to make that decision.
+	 *
+	 * @param string $type "add", "edit" or "delete"
+	 * @param array $host the host it happened to
+	 */
+	protected function push($type, array $host)
+	{
+		(new Api\Json\Push(Api\Json\Push::ALL))->apply('egw.push', [[
+			'app'        => self::APP,
+			'id'         => $host['host_id'],
+			'type'       => $type,
+			'acl'        => ['host_creator' => $host['host_creator']],
+			'account_id' => $GLOBALS['egw_info']['user']['account_id'],
+		]]);
 	}
 }
