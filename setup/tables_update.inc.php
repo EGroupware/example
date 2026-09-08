@@ -47,3 +47,28 @@ function example_upgrade26_1_001()
 
 	return $GLOBALS['setup_info']['example']['currentver'] = '26.1.002';
 }
+
+/**
+ * Create the table custom-field values are stored in
+ *
+ * The meta types cfname and cfvalue are what mark the two columns as holding a
+ * custom field's name and its value; Api\Storage finds them by those.
+ *
+ * @return string
+ */
+function example_upgrade26_1_002()
+{
+	$GLOBALS['egw_setup']->oProc->CreateTable('egw_example_extra', array(
+		'fd' => array(
+			'host_id' => array('type' => 'int','precision' => '4','nullable' => False),
+			'host_extra_name' => array('type' => 'varchar','meta' => 'cfname','precision' => '64','nullable' => False),
+			'host_extra_value' => array('type' => 'text','meta' => 'cfvalue','nullable' => False)
+		),
+		'pk' => array(),
+		'fk' => array(),
+		'ix' => array(),
+		'uc' => array(array('host_id','host_extra_name'))
+	));
+
+	return $GLOBALS['setup_info']['example']['currentver'] = '26.1.003';
+}

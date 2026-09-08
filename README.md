@@ -5,164 +5,180 @@
 3. Step: [storing hosts in the database](https://github.com/EGroupware/example/tree/step3)
 4. Step: [a list of hosts](https://github.com/EGroupware/example/tree/step4)
 5. Step: [linking hosts to other entries](https://github.com/EGroupware/example/tree/step5)
+6. Step: [code that runs in the browser](https://github.com/EGroupware/example/tree/step6)
 
-## 6. Step: code that runs in the browser
+## 7. Step: custom fields
 
-Everything so far has been server-side: PHP decides, the browser draws. This step adds the
-app's own JavaScript class, and uses it for a *View* action that shows a host in a dialog
-without opening the edit popup or asking the server for anything.
+An administrator can add fields to an application without touching its code. This step gives
+the app somewhere to put them, and puts them on the dialog and in the list.
 
-![step6-01 The view dialog](https://raw.githubusercontent.com/wiki/EGroupware/example/images/step6-01.png)
+![step7-01 A custom field on the edit dialog](https://raw.githubusercontent.com/wiki/EGroupware/example/images/step7-01.png)
 
-### js/app.ts
+It is also the first schema change since the table was created, so it is where upgrades come in.
 
-Every application may have one class, extending `EgwApp`. The framework creates a single
-instance of it and puts it in `app.example`, which is how templates and actions reach these
-methods.
+### A second table
 
-```ts
-import {EgwApp} from "../../api/js/jsapi/egw_app";
-import {Et2Dialog} from "../../api/js/etemplate/Et2Dialog/Et2Dialog";
-// egw and app are globals - no import needed
-
-class ExampleApp extends EgwApp
-{
-	constructor()
-	{
-		super('example');
-	}
-}
-
-app.classes.example = ExampleApp;
-```
-
-The constructor takes no arguments and passes the application name to `super()`.
-
-### The view action
-
-`view()` is handed the action and the rows it ran on, like any action callback:
-
-```ts
-view(_action, _selected)
-{
-	// The list already holds every row it has fetched, so viewing one needs no
-	// request: ask the client-side store for the row by the id the list uses.
-	const rowId = _selected[0].id;			// "example::123"
-	const values = {
-		content: this.egw.dataGetUIDdata(rowId).data,
-		readonlys: {__ALL__: true}
-	};
-
-	const dialog = new Et2Dialog(this.egw);
-	dialog.transformAttributes({
-		title: this.egw.lang('View host'),
-		// the edit dialog's own template, shown read-only
-		template: this.egw.link('/example/templates/default/edit.xet'),
-		type: Et2Dialog.PLAIN_MESSAGE,
-		// button_id is what the dialog reports back to the callback, and a custom
-		// button may use any non-numeric string for it
-		buttons: [
-			{button_id: 'close', label: this.egw.lang('Close'), id: 'close', image: 'close'},
-			{button_id: 'edit', label: this.egw.lang('Edit'), id: 'edit', image: 'edit'}
-		],
-		callback: (_button) =>
-		{
-			if (_button === 'edit')
-			{
-				this.egw.open(values.content.host_id, 'example', 'edit');
-			}
-		},
-		width: 400,
-		value: values
-	});
-	// adding it to the document is what opens it
-	document.body.appendChild(dialog);
-}
-```
-
-Three things worth pulling out.
-
-**The data is already here.** The list keeps every row it fetched in a client-side store, so
-`dataGetUIDdata()` answers immediately and the dialog opens with no round trip.
-
-**The dialog reuses the edit template**, handed `readonlys: {__ALL__: true}` to show it
-read-only. That is why the buttons in `edit.xet` gained `hideOnReadonly="true"` - Save,
-Apply, Cancel and Delete are meaningless here, and hide themselves rather than needing a
-second template.
-
-**`button_id` is what comes back** to the callback. Set it on any custom button; the
-built-in `Et2Dialog.BUTTONS_*` sets already have theirs.
-
-[The whole file on this branch](https://github.com/EGroupware/example/blob/step6/js/app.ts)
-
-### Building it
-
-`app.ts` is TypeScript, and the framework loads `js/app.min.js`. **Until it is built, nothing
-in this step happens** - `app.example` does not exist, and the action silently does nothing.
-From the EGroupware root:
-
-```bash
-npm run build
-```
-
-Rollup finds the app by itself: any top-level `<app>/js/app.ts` is picked up, which is one
-reason an application lives beside `api/` rather than anywhere else. While working on
-client-side code, two more are worth knowing:
-
-```bash
-npm run build:watch    # rebuild whenever a source file changes
-npm run typecheck      # type errors without building
-```
-
-The result, `js/app.min.js`, is a build artifact and is not committed - this branch
-`.gitignore`s it, so you build it yourself after checking out.
-
-### src/Ui.php
-
-The action that calls it. Actions so far have been URLs; this one names a method:
+Custom-field values go in their own table: one row per entry per field, so an administrator
+adding a field costs nothing in the main table.
 
 ```php
-'view' => [
-	'caption' => 'View',
-	'default' => true,
-	'allowOnMultiple' => false,
-	// not a URL: this one runs a method on our own app object
-	'onExecute' => 'javaScript:app.example.view',
-	'group' => $group=0,
-],
+'egw_example_extra' => array(
+	'fd' => array(
+		'host_id' => array('type' => 'int','precision' => '4','nullable' => False),
+		'host_extra_name' => array('type' => 'varchar','meta' => 'cfname','precision' => '64','nullable' => False),
+		'host_extra_value' => array('type' => 'text','meta' => 'cfvalue','nullable' => False)
+	),
+	'pk' => array(),
+	'fk' => array(),
+	'ix' => array(),
+	'uc' => array(array('host_id','host_extra_name'))
+)
 ```
 
-`javaScript:` followed by a path from `app` is resolved in the browser and called with the
-action and the selection. Making *View* the default means double-clicking a row opens the
-dialog; *Edit* keeps its popup and is one click further away in the context menu.
+The `meta` types are the important part: `cfname` and `cfvalue` are how the storage layer
+recognises which column holds a field's name and which its value. The unique constraint on
+`host_id, host_extra_name` is what stops one entry having the same field twice.
+
+### Upgrading an installation that already exists
+
+`tables_current.inc.php` describes the schema a *fresh* install gets. An installation that
+already has the old schema needs to be brought forward, which is what `tables_update.inc.php`
+is for - one function per version:
+
+```php
+function example_upgrade26_1_002()
+{
+	$GLOBALS['egw_setup']->oProc->CreateTable('egw_example_extra', array(
+		/* ... same definition as above ... */
+	));
+
+	return $GLOBALS['setup_info']['example']['currentver'] = '26.1.003';
+}
+```
+
+The name says which version it upgrades *from* - `26_1_002` runs against an installation
+sitting at 26.1.002 - and the return value is where it leaves it. Setup runs them in sequence
+until the app reaches the version in `setup.inc.php`, so a very old installation walks the
+whole chain.
+
+The definition is elided above because it is the same one already given for
+`tables_current.inc.php` - and keeping those two in step by hand is what
+[DB-Tools](https://github.com/EGroupware/developer) is for: it writes both files from the
+schema editor, so a new column lands in the fresh-install schema and the upgrade together.
+
+Bump the version whenever you change the schema, or the update never runs:
+
+```php
+$setup_info['example']['version']   = '26.1.003';
+$setup_info['example']['tables']    = array('egw_example', 'egw_example_extra');
+```
+
+### src/Bo.php
+
+`Api\Storage` is `Api\Storage\Base` plus custom fields. Switching the parent class and naming
+the extra table is the whole change:
+
+```php
+class Bo extends Api\Storage
+{
+	const APP = 'example';
+	const TABLE = 'egw_example';
+	const EXTRA_TABLE = 'egw_example_extra';
+
+	public function __construct()
+	{
+		// the last two name the columns holding a custom field's name and its value;
+		// a leading underscore is prefixed with the column prefix, here "host"
+		parent::__construct(self::APP, self::TABLE, self::EXTRA_TABLE, '', '_extra_name', '_extra_value');
+	}
+}
+```
+
+`read()`, `save()`, `search()` and `get_rows()` now carry custom fields along with everything
+else, under keys beginning with `#` - `#location` for a field named `location`. Nothing else
+in `Bo` or `Ui` changes.
+
+### src/Hooks.php
+
+Someone has to be able to *define* the fields. The `admin` hook is how an application adds
+its own section to the Admin app:
+
+```php
+public static function admin($args)
+{
+	unset($args);	// not used, but part of the hook signature
+
+	if (empty($GLOBALS['egw_info']['user']['apps']['admin']))
+	{
+		return;
+	}
+	display_section(Bo::APP, [
+		'Custom fields' => Api\Egw::link('/index.php', [
+			'menuaction' => 'admin.admin_customfields.index',
+			'appname'    => Bo::APP,
+			'ajax'       => 'true',
+		]),
+	]);
+}
+```
+
+The interface itself is the API's, not ours - we only say which application it should be
+editing. `display_section()` is what puts the entries under our application's name, and the
+permission check keeps a normal user from being offered a page they cannot open.
+
+Like every hook, it has to be declared:
+
+```php
+$setup_info['example']['hooks']['admin'] = 'EGroupware\\Example\\Hooks::admin';
+```
+
+### The templates
+
+On the dialog, one tag renders whatever fields are defined:
+
+```xml
+<template id="example.edit.customfields">
+	<customfields/>
+</template>
+```
+
+In the list it takes two, a header and a row cell, both naming the application whose fields
+they show:
+
+```xml
+<et2-nextmatch-header-customfields id="customfields" app="example"/>
+```
+
+```xml
+<et2-customfields-list id="$row" class="customfields" app="example"></et2-customfields-list>
+```
+
+`id="$row"` hands the whole row to the widget, which then picks out the `#`-prefixed keys
+itself. Without these two the fields would still be stored and still be on the dialog, and
+the list would quietly ignore them.
 
 ## Try it
 
-1. Run `npm run build` in the EGroupware root, then reload with a forced refresh so the
-   browser takes the new file. A plain reload often will not: use the browser's
-   *empty cache and hard reload*.
-2. Open **Example** and double-click a row. The view dialog opens, filled in, with only
-   *Close* and *Edit* on it.
-3. Press **Edit** - the edit popup opens on that host.
-4. Right-click a row: *View* and *Edit* are both offered now.
+1. **Admin > Clear cache/register hooks.** The `admin` hook is new, and nothing appears
+   until it is registered.
+2. Open **Admin** and find **Applications > Example > Custom fields** in the tree.
+3. Add a field: name `location`, label `Location`, type `Text`.
+4. Open a host. There is a **Custom fields** tab; fill *Location* in and press **Save**.
+5. The list now has a custom-fields column, with that value in it.
+6. Add a second field and reload - it appears on both, with no code change.
 
 ### Troubleshooting
 
-**Double-clicking does nothing, and the console says nothing** - `js/app.min.js` has not been
-built. Run `npm run build`; check `app.example` exists in the browser console afterwards.
+**No *Custom fields* entry under Applications > Example** - the hook is declared but not
+registered. *Admin > Clear cache/register hooks*. If it survives that, the server is still
+holding the old hook list: restart php-fpm.
 
-**It builds, but the browser keeps running the old code** - `app.min.js` is cached under an
-unchanging name, so a normal reload can serve the previous build. Use *empty cache and hard
-reload*, which is the browser's own, not EGroupware's.
+**The field shows on the dialog but never saves** - `Bo` is still extending
+`Api\Storage\Base`, or the extra table was never created. Setup's *Manage applications* lists
+the installed version of every app; this step needs Example at 26.1.003.
 
-**`app.example` exists but `view` throws** - the constructor must take no arguments and pass
-the application name to `super()` itself.
+**`Table 'egw_example_extra' doesn't exist`** - the update did not run. It only runs when the
+version in `setup.inc.php` is higher than the installed one.
 
-**The dialog opens empty** - the template path is wrong, or the id in the `.xet` does not
-match. Check the network tab for `edit.xet`.
-
-**A dialog button does nothing** - it needs a `button_id`; that is the value the callback is
-given.
-
---> continue to [step 7](https://github.com/EGroupware/example/tree/step7), which adds custom
-fields
+--> continue to [step 8](https://github.com/EGroupware/example/tree/step8), which adds
+categories

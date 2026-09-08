@@ -13,6 +13,8 @@
 
 namespace EGroupware\Example;
 
+use EGroupware\Api;
+
 /**
  * Hooks the rest of EGroupware calls into
  *
@@ -51,5 +53,31 @@ class Hooks
 			'add'        => ['menuaction' => Bo::APP.'.'.Ui::class.'.edit'],
 			'add_popup'  => '640x480',
 		];
+	}
+
+	/**
+	 * What this application offers an administrator
+	 *
+	 * Registered for the "admin" hook, which the Admin application calls to collect
+	 * every app's section.  The interface itself is the API's - we only say which
+	 * application it should be editing.
+	 *
+	 * @param string|array $args hook location, not used
+	 */
+	public static function admin($args)
+	{
+		unset($args);	// not used, but part of the hook signature
+
+		if (empty($GLOBALS['egw_info']['user']['apps']['admin']))
+		{
+			return;
+		}
+		display_section(Bo::APP, [
+			'Custom fields' => Api\Egw::link('/index.php', [
+				'menuaction' => 'admin.admin_customfields.index',
+				'appname'    => Bo::APP,
+				'ajax'       => 'true',
+			]),
+		]);
 	}
 }

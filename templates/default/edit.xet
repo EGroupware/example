@@ -10,6 +10,9 @@
 			<et2-link-list  id="link_to"></et2-link-list>
 		</et2-vbox>
 	</template>
+	<template id="example.edit.customfields" template="" lang="" group="0" version="26.1">
+		<customfields/>
+	</template>
 	<template id="example.edit" template="" lang="" group="0" version="26.1">
 		<grid width="100%">
 			<columns>
@@ -26,10 +29,12 @@
 						<tabs>
 							<tab id="description" label="Description"/>
 							<tab id="links" label="Links"/>
+							<tab id="customfields" label="Custom fields"/>
 						</tabs>
 						<tabpanels>
 							<template id="example.edit.description"/>
 							<template id="example.edit.links"/>
+							<template id="example.edit.customfields"/>
 						</tabpanels>
 					</et2-tabbox>
 				</row>

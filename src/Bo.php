@@ -18,20 +18,26 @@ use EGroupware\Api;
 /**
  * Storing and reading hosts
  *
- * Api\Storage\Base does the actual SQL: it reads the table definition from
+ * Api\Storage does the actual SQL: it reads the table definition from
  * setup/tables_current.inc.php and gives us read(), save(), delete() and search().
+ * It also stores custom fields, in a second table, keyed by the entry they belong
+ * to - so read() and save() carry them along with everything else, and the rest of
+ * this class needs to know nothing about them.
  */
-class Bo extends Api\Storage\Base
+class Bo extends Api\Storage
 {
 	const APP = 'example';
 	const TABLE = 'egw_example';
+	const EXTRA_TABLE = 'egw_example_extra';
 
 	/**
 	 * Constructor
 	 */
 	public function __construct()
 	{
-		parent::__construct(self::APP, self::TABLE);
+		// the last two name the columns holding a custom field's name and its value;
+		// a leading underscore is prefixed with the column prefix, here "host"
+		parent::__construct(self::APP, self::TABLE, self::EXTRA_TABLE, '', '_extra_name', '_extra_value');
 
 		// Work with Api\DateTime objects instead of raw timestamps: the storage layer
 		// then converts our date columns between server- and user-time on every read
