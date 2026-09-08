@@ -1,0 +1,3 @@
+# Built from js/app.ts by `npm run build` in the EGroupware root
+js/app.min.js
+js/app.min.js.map

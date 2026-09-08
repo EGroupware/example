@@ -4,249 +4,165 @@
 2. Step: [an edit dialog](https://github.com/EGroupware/example/tree/step2)
 3. Step: [storing hosts in the database](https://github.com/EGroupware/example/tree/step3)
 4. Step: [a list of hosts](https://github.com/EGroupware/example/tree/step4)
+5. Step: [linking hosts to other entries](https://github.com/EGroupware/example/tree/step5)
 
-## 5. Step: linking hosts to other entries
+## 6. Step: code that runs in the browser
 
-A host on its own is an island. This step connects it to the rest of EGroupware: a host can
-be linked to a contact, an InfoLog entry or a project, and those applications can search for
-hosts and show their names in return.
+Everything so far has been server-side: PHP decides, the browser draws. This step adds the
+app's own JavaScript class, and uses it for a *View* action that shows a host in a dialog
+without opening the edit popup or asking the server for anything.
 
-![step5-01 The Links tab of the edit dialog](https://raw.githubusercontent.com/wiki/EGroupware/example/images/step5-01.png)
+![step6-01 The view dialog](https://raw.githubusercontent.com/wiki/EGroupware/example/images/step6-01.png)
 
-All of it comes from one hook.
+### js/app.ts
 
-### setup/setup.inc.php
+Every application may have one class, extending `EgwApp`. The framework creates a single
+instance of it and puts it in `app.example`, which is how templates and actions reach these
+methods.
 
-A hook is a function some other part of EGroupware calls. Which ones an app implements is
-declared in its setup file:
+```ts
+import {EgwApp} from "../../api/js/jsapi/egw_app";
+import {Et2Dialog} from "../../api/js/etemplate/Et2Dialog/Et2Dialog";
+// egw and app are globals - no import needed
 
-```php
-// Hooks we implement, see src/Hooks.php.  Registered when the app is installed,
-// and by Admin > Clear cache/register hooks.
-$setup_info['example']['hooks']['search_link'] = 'EGroupware\\Example\\Hooks::search_link';
-```
-
-Declaring it is not enough by itself - the list is read when the app is installed or
-upgraded. This step adds no table and no column, so there is no new version to update to,
-and *Admin > Clear cache/register hooks* is what puts the hook into service.
-
-### src/Hooks.php
-
-`search_link` is the hook the link system calls to ask an app how it can be linked to. What
-it returns is that app's entry in the **link registry**:
-
-```php
-public static function search_link($location)
+class ExampleApp extends EgwApp
 {
-	unset($location);	// not used, but part of the hook signature
-
-	return [
-		// finding an entry, and what to call it once found
-		'query'      => Bo::APP.'.'.Bo::class.'.link_query',
-		'title'      => Bo::APP.'.'.Bo::class.'.link_title',
-		// opening one - view is what a user without edit rights gets
-		'view'       => ['menuaction' => Bo::APP.'.'.Ui::class.'.edit'],
-		'view_id'    => 'host_id',
-		'view_popup' => '640x480',
-		'edit'       => ['menuaction' => Bo::APP.'.'.Ui::class.'.edit'],
-		'edit_id'    => 'host_id',
-		'edit_popup' => '640x480',
-		// the whole list, and adding a new entry
-		'list'       => ['menuaction' => Bo::APP.'.'.Ui::class.'.index', 'ajax' => 'true'],
-		'add'        => ['menuaction' => Bo::APP.'.'.Ui::class.'.edit'],
-		'add_popup'  => '640x480',
-	];
-}
-```
-
-`query` and `title` name two methods on `Bo`: one to search hosts, one to name a single
-host. `view_id` says which parameter carries the id, and `view_popup` how big a window to
-open. The registry reaches the browser too, which is what makes the next change possible.
-
-### templates/default/index.xet
-
-The Add button knows less than it did, and works better for it:
-
-```xml
-<et2-button-icon statustext="Add" id="add" image="add" slot="prefix"
-	onclick="egw.open('','example','add'); return false;"
-	noSubmit="true"></et2-button-icon>
-```
-
-`egw.open(id, app, type)` looks the app up in the link registry and opens it the way the
-registry says - here the `add` entry, in a popup of the size `add_popup` gives. An empty id
-means there is no entry to open yet. The same call works from any application, which is how
-one app opens another's dialog without knowing its URLs.
-
-### src/Bo.php
-
-The two methods the registry pointed at. `link_title()` names one host:
-
-```php
-public function link_title($entry)
-{
-	if (!is_array($entry))
+	constructor()
 	{
-		// read() replaces $this->data, which whoever called us may still be using
-		$backup =& $this->data;
-		unset($this->data);
-		$entry = $this->read(['host_id' => $entry]);
-		$this->data =& $backup;
+		super('example');
 	}
-	return $entry ? $entry['host_name'] : $entry;
 }
+
+app.classes.example = ExampleApp;
 ```
 
-`link_query()` is the search behind the link dialog. `$options` arrives with paging and
-leaves with the total:
+The constructor takes no arguments and passes the application name to `super()`.
 
-```php
-public function link_query($pattern, array &$options = [])
+### The view action
+
+`view()` is handed the action and the rows it ran on, like any action callback:
+
+```ts
+view(_action, _selected)
 {
-	$limit = false;
-	$need_count = false;
-	if (!empty($options['start']) || !empty($options['num_rows']))
-	{
-		$limit = [$options['start'], $options['num_rows']];
-		$need_count = true;
-	}
-	$result = [];
-	foreach((array)$this->search($pattern, false, 'host_name', '', '%', false, 'OR',
-		$limit, null, '', $need_count) as $host)
-	{
-		if ($host) $result[$host['host_id']] = $this->link_title($host);
-	}
-	$options['total'] = $need_count ? $this->total : count($result);
+	// The list already holds every row it has fetched, so viewing one needs no
+	// request: ask the client-side store for the row by the id the list uses.
+	const rowId = _selected[0].id;			// "example::123"
+	const values = {
+		content: this.egw.dataGetUIDdata(rowId).data,
+		readonlys: {__ALL__: true}
+	};
 
-	return $result;
+	const dialog = new Et2Dialog(this.egw);
+	dialog.transformAttributes({
+		title: this.egw.lang('View host'),
+		// the edit dialog's own template, shown read-only
+		template: this.egw.link('/example/templates/default/edit.xet'),
+		type: Et2Dialog.PLAIN_MESSAGE,
+		// button_id is what the dialog reports back to the callback, and a custom
+		// button may use any non-numeric string for it
+		buttons: [
+			{button_id: 'close', label: this.egw.lang('Close'), id: 'close', image: 'close'},
+			{button_id: 'edit', label: this.egw.lang('Edit'), id: 'edit', image: 'edit'}
+		],
+		callback: (_button) =>
+		{
+			if (_button === 'edit')
+			{
+				this.egw.open(values.content.host_id, 'example', 'edit');
+			}
+		},
+		width: 400,
+		value: values
+	});
+	// adding it to the document is what opens it
+	document.body.appendChild(dialog);
 }
 ```
 
-Saving needs one addition. A host that does not exist yet has no id to link anything to, so
-the dialog holds those links and hands them over once there is one:
+Three things worth pulling out.
 
-```php
-if (($error = parent::save(null, $extra_where)) == 0 &&
-	// A new host cannot be linked before it exists, so the dialog holds its
-	// links until now and hands them over as link_to[to_id].
-	!empty($keys['link_to']['to_id']) && is_array($keys['link_to']['to_id']))
-{
-	Api\Link::link(self::APP, $this->data['host_id'], $keys['link_to']['to_id']);
-}
-return $error;
+**The data is already here.** The list keeps every row it fetched in a client-side store, so
+`dataGetUIDdata()` answers immediately and the dialog opens with no round trip.
+
+**The dialog reuses the edit template**, handed `readonlys: {__ALL__: true}` to show it
+read-only. That is why the buttons in `edit.xet` gained `hideOnReadonly="true"` - Save,
+Apply, Cancel and Delete are meaningless here, and hide themselves rather than needing a
+second template.
+
+**`button_id` is what comes back** to the callback. Set it on any custom button; the
+built-in `Et2Dialog.BUTTONS_*` sets already have theirs.
+
+[The whole file on this branch](https://github.com/EGroupware/example/blob/step6/js/app.ts)
+
+### Building it
+
+`app.ts` is TypeScript, and the framework loads `js/app.min.js`. **Until it is built, nothing
+in this step happens** - `app.example` does not exist, and the action silently does nothing.
+From the EGroupware root:
+
+```bash
+npm run build
 ```
 
-Deleting needs the mirror of it. Links have two ends, and nothing else cleans up the other
-one:
+Rollup finds the app by itself: any top-level `<app>/js/app.ts` is picked up, which is one
+reason an application lives beside `api/` rather than anywhere else. While working on
+client-side code, two more are worth knowing:
 
-```php
-if (($deleted = parent::delete($keys)) && $host_id)
-{
-	Api\Link::unlink(0, self::APP, $host_id);
-}
-return $deleted;
+```bash
+npm run build:watch    # rebuild whenever a source file changes
+npm run typecheck      # type errors without building
 ```
 
-[The whole file on this branch](https://github.com/EGroupware/example/blob/step5/src/Bo.php)
+The result, `js/app.min.js`, is a build artifact and is not committed - this branch
+`.gitignore`s it, so you build it yourself after checking out.
 
 ### src/Ui.php
 
-The link widgets work on a `link_to` value saying what they are linking to:
+The action that calls it. Actions so far have been URLs; this one names a method:
 
 ```php
-$content['link_to'] = [
-	'to_id'  => $content['host_id'] ?: ($content['link_to']['to_id'] ?? 0),
-	'to_app' => Bo::APP,
-];
+'view' => [
+	'caption' => 'View',
+	'default' => true,
+	'allowOnMultiple' => false,
+	// not a URL: this one runs a method on our own app object
+	'onExecute' => 'javaScript:app.example.view',
+	'group' => $group=0,
+],
 ```
 
-A `to_id` of 0 is how you say "no entry yet": the widget then keeps new links client-side
-and submits them with the form, instead of storing them against an id that does not exist.
-Once the host is saved, `to_id` is its `host_id` and links are stored as you make them.
-
-Which brings up what to preserve, because this dialog is the first with something that
-could go wrong. The whitelist from step 3 is unchanged:
-
-```php
-$preserv = [
-	'host_id' => $content['host_id'] ?? null,
-];
-
-$tmpl = new Api\Etemplate('example.edit');
-$tmpl->exec('example.'.self::class.'.edit', $content, [], $readonlys, $preserv);
-```
-
-`link_to` is why it matters here. It has widgets of its own, and they submit it. Preserving
-`$content` wholesale would send a second copy of it back alongside theirs - and a preserved
-`to_id` of 0 merged into what the widgets submitted is enough to lose every link on the form.
-Preserve what you mean to preserve, and let the widgets carry the rest.
-
-### templates/default/edit.xet
-
-The dialog gets tabs, because there is now more than one thing on it:
-
-```xml
-<et2-tabbox  id="tabs" span="all" width="100%" tabHeight="220">
-	<tabs>
-		<tab id="description" label="Description"/>
-		<tab id="links" label="Links"/>
-	</tabs>
-	<tabpanels>
-		<template id="example.edit.description"/>
-		<template id="example.edit.links"/>
-	</tabpanels>
-</et2-tabbox>
-```
-
-Each tab is its own template. The Links one holds both link widgets:
-
-```xml
-<template id="example.edit.links">
-	<et2-vbox  width="100%">
-		<et2-link-to  id="link_to"></et2-link-to>
-		<et2-link-list  id="link_to"></et2-link-list>
-	</et2-vbox>
-</template>
-```
-
-They share the id on purpose: `et2-link-to` makes new links, `et2-link-list` shows the ones
-that exist, and both work on the same `link_to` value.
-
-Linking is symmetric, and nothing extra is needed for the other side of it: the contact
-shows the host straight away, named by `link_title()`.
-
-![step5-02 The host listed under an Addressbook contact](https://raw.githubusercontent.com/wiki/EGroupware/example/images/step5-02.png)
+`javaScript:` followed by a path from `app` is resolved in the browser and called with the
+action and the selection. Making *View* the default means double-clicking a row opens the
+dialog; *Edit* keeps its popup and is one click further away in the context menu.
 
 ## Try it
 
-You need at least one contact in Addressbook to link to.
-
-1. **Admin > Clear cache/register hooks.** The hook is new, and nothing works until it
-   is registered.
-2. Open **Example** and click **Add**. The popup still opens - now through the link
-   registry rather than a hard-coded URL.
-3. Enter a hostname, then open the **Links** tab. Choose *Addressbook*, type part of a
-   contact's name, pick it and press **Link**.
-4. Press **Save**. The link had nowhere to go until the host existed; it is stored now.
-5. Reopen that host. The Links tab lists the contact.
-6. Open the same contact in **Addressbook** and look at its links: your host is there,
-   under the name `link_title()` gave it.
-7. Back in Example, delete the host. The link disappears from the contact as well.
+1. Run `npm run build` in the EGroupware root, then reload with a forced refresh so the
+   browser takes the new file. A plain reload often will not: use the browser's
+   *empty cache and hard reload*.
+2. Open **Example** and double-click a row. The view dialog opens, filled in, with only
+   *Close* and *Edit* on it.
+3. Press **Edit** - the edit popup opens on that host.
+4. Right-click a row: *View* and *Edit* are both offered now.
 
 ### Troubleshooting
 
-**`egw.open() app "example" NOT defined in link registry!`** - the hook is not registered.
-*Admin > Clear cache/register hooks*, then reload the page. If it survives that, the server
-is still holding the old registry: restart php-fpm.
+**Double-clicking does nothing, and the console says nothing** - `js/app.min.js` has not been
+built. Run `npm run build`; check `app.example` exists in the browser console afterwards.
 
-**The link dialog finds no hosts** - `link_query()` is what it calls. Check the app-name and
-method in `search_link()`'s `query` match a real public method on `Bo`.
+**It builds, but the browser keeps running the old code** - `app.min.js` is cached under an
+unchanging name, so a normal reload can serve the previous build. Use *empty cache and hard
+reload*, which is the browser's own, not EGroupware's.
 
-**Links made before the first save are lost** - `link_to` is being preserved, or `to_id` is
-not reaching `save()`. Both ends are in `Ui.php` above.
+**`app.example` exists but `view` throws** - the constructor must take no arguments and pass
+the application name to `super()` itself.
 
-**Changes in `.xet` files do not show up** - templates are cached. *Admin > Clear
-cache/register hooks*.
+**The dialog opens empty** - the template path is wrong, or the id in the `.xet` does not
+match. Check the network tab for `edit.xet`.
 
---> continue to [step 6](https://github.com/EGroupware/example/tree/step6), which adds
-client-side code in `app.ts`
+**A dialog button does nothing** - it needs a `button_id`; that is the value the callback is
+given.
+
+--> continue to [step 7](https://github.com/EGroupware/example/tree/step7), which adds custom
+fields

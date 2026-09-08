@@ -174,13 +174,20 @@ class Ui
 	protected function get_actions()
 	{
 		return [
+			'view' => [
+				'caption' => 'View',
+				'default' => true,
+				'allowOnMultiple' => false,
+				// not a URL: this one runs a method on our own app object
+				'onExecute' => 'javaScript:app.example.view',
+				'group' => $group=0,
+			],
 			'edit' => [
 				'caption' => 'Edit',
-				'default' => true,
 				'allowOnMultiple' => false,
 				'url' => 'menuaction=example.'.self::class.'.edit&host_id=$id',
 				'popup' => '640x480',
-				'group' => $group=0,
+				'group' => $group,
 			],
 			'add' => [
 				'caption' => 'Add',
