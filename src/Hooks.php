@@ -78,6 +78,28 @@ class Hooks
 				'appname'    => Bo::APP,
 				'ajax'       => 'true',
 			]),
+			'Global Categories' => Api\Egw::link('/index.php', [
+				'menuaction'  => 'admin.admin_categories.index',
+				'appname'     => Bo::APP,
+				'global_cats' => true,
+				'ajax'        => 'true',
+			]),
 		]);
+	}
+
+	/**
+	 * We use categories
+	 *
+	 * Answering this hook at all is what puts the application in the category
+	 * administration's list, so an administrator can maintain categories for it.
+	 *
+	 * @param string|array $location hook location, not used
+	 * @return boolean
+	 */
+	public static function categories($location)
+	{
+		unset($location);	// not used, but part of the hook signature
+
+		return true;
 	}
 }

@@ -72,3 +72,24 @@ function example_upgrade26_1_002()
 
 	return $GLOBALS['setup_info']['example']['currentver'] = '26.1.003';
 }
+
+/**
+ * Add the category column
+ *
+ * The meta type "category" is what marks it as holding a category id, rather than
+ * just any integer.
+ *
+ * @return string
+ */
+function example_upgrade26_1_003()
+{
+	$GLOBALS['egw_setup']->oProc->AddColumn('egw_example', 'cat_id', array(
+		'type' => 'int',
+		'meta' => 'category',
+		'precision' => '4',
+		'default' => '0',
+		'comment' => 'category'
+	));
+
+	return $GLOBALS['setup_info']['example']['currentver'] = '26.1.004';
+}

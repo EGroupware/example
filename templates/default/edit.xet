@@ -25,6 +25,10 @@
 					<et2-textbox  id="host_name" tabindex="1" maxlength="64"></et2-textbox>
 				</row>
 				<row>
+					<et2-description  for="cat_id" value="Category"></et2-description>
+					<et2-select-cat  id="cat_id" application="example" emptyLabel="None"></et2-select-cat>
+				</row>
+				<row>
 					<et2-tabbox  id="tabs" span="all" width="100%" tabHeight="220">
 						<tabs>
 							<tab id="description" label="Description"/>

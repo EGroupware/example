@@ -150,6 +150,19 @@ class Ui
 	 */
 	public function get_rows($query, ?array &$rows=null, ?array &$readonlys=null)
 	{
+		// The category filter arrives on its own, not in col_filter, so map it across
+		// for the storage layer.  Doing it before the query is stored means an action
+		// running on "select all" filters by category exactly like the list does.
+		if ((string)($query['cat_id'] ?? '') !== '')
+		{
+			$query['col_filter']['cat_id'] = $query['cat_id'];
+		}
+		else
+		{
+			// nothing selected: drop it, or the last choice would filter forever
+			unset($query['col_filter']['cat_id']);
+		}
+
 		// Remember the query, so the filters and sorting survive a reload and
 		// action() can re-apply exactly this one instead of trusting the client.
 		//
@@ -262,7 +275,6 @@ class Ui
 				'get_rows'            => Bo::APP.'.'.self::class.'.get_rows',
 				'no_filter'           => true,	// we offer no filter ...
 				'no_filter2'          => true,	// ... and no second one
-				'no_cat'              => true,	// ... and nothing to categorise by yet
 				'row_id'              => 'host_id',
 				'row_modified'        => 'host_modified',
 				'actions'             => $this->get_actions(),

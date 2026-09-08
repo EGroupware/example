@@ -18,6 +18,7 @@
 				<column width="120"/>
 				<column width="120"/>
 				<column width="15%"/>
+				<column width="10%"/>
 			</columns>
 			<rows>
 				<row class="th">
@@ -33,6 +34,7 @@
 						<et2-nextmatch-header-account id="host_modifier" emptyLabel="Modified by"/>
 					</et2-vbox>
 					<et2-nextmatch-header-customfields id="customfields" app="example"/>
+					<et2-nextmatch-sortheader label="Category" id="cat_id"/>
 				</row>
 				<row class="$class">
 					<et2-description id="host_id"></et2-description>
@@ -47,6 +49,7 @@
 						<et2-select-account id="host_modifier" readonly="true"></et2-select-account>
 					</et2-vbox>
 					<et2-customfields-list id="$row" class="customfields" app="example"></et2-customfields-list>
+					<et2-select-cat id="cat_id" application="example" readonly="true"></et2-select-cat>
 				</row>
 			</rows>
 		</grid>

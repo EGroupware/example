@@ -17,7 +17,8 @@ $phpgw_baseline = array(
 			'host_creator' => array('type' => 'int','meta' => 'account','precision' => '4','nullable' => False),
 			'host_created' => array('type' => 'timestamp','nullable' => False),
 			'host_modifier' => array('type' => 'int','meta' => 'account','precision' => '4'),
-			'host_modified' => array('type' => 'timestamp','default' => 'current_timestamp')
+			'host_modified' => array('type' => 'timestamp','default' => 'current_timestamp'),
+			'cat_id' => array('type' => 'int','meta' => 'category','precision' => '4','default' => '0','comment' => 'category')
 		),
 		'pk' => array('host_id'),
 		'fk' => array(),
