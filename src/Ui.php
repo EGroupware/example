@@ -13,6 +13,8 @@
 
 namespace EGroupware\Example;
 
+use EGroupware\Api;
+
 class Ui
 {
 	/**
@@ -25,7 +27,41 @@ class Ui
 	 */
 	public $public_functions = [
 		'index' => true,
+		'edit'  => true,
 	];
+
+	/**
+	 * Edit a host
+	 *
+	 * Called twice for one round trip: once with null to draw the form, and again
+	 * with what the browser submitted.
+	 *
+	 * @param ?array $content =null values from the submitted form, null on first call
+	 */
+	public function edit(?array $content=null)
+	{
+		if (!is_array($content))
+		{
+			$content = [];
+		}
+		else
+		{
+			// which button was pressed?  Guard the key: a submit can arrive without one.
+			$button = key($content['button'] ?? []);
+			unset($content['button']);
+
+			switch($button)
+			{
+				case 'save':
+				case 'apply':
+					// nowhere to put it yet - the next step gives the app a table
+					Api\Framework::message(lang('Entry saved.'));
+					break;
+			}
+		}
+		$tmpl = new Api\Etemplate('example.edit');
+		$tmpl->exec('example.'.self::class.'.edit', $content);
+	}
 
 	/**
 	 * Index: what opening the application shows
@@ -34,8 +70,8 @@ class Ui
 	 */
 	public function index(?array $content=null)
 	{
-		unset($content);	// nothing submits to us yet
+		unset($content);
 
-		echo "Hello World :)";
+		$this->edit();
 	}
 }

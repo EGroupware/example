@@ -1,154 +1,183 @@
 # Example app for EGroupware development
 
-## 1. Step: a minimal app
+1. Step: [a minimal app](https://github.com/EGroupware/example/tree/step1)
 
-Already know EGroupware and just want a working app to copy?
-[master](https://github.com/EGroupware/example) is the finished thing.
+## 2. Step: an edit dialog
 
-An EGroupware application is a directory beside `api/`. Two files are what make it an
-application - one telling setup it exists, one holding the code - and an icon and a
-translation belong there from the start. This step builds the smallest one that works: it
-installs, appears in the navbar, and says hello.
+`echo` is not how EGroupware builds a page. This step replaces it with a template - a form
+with fields and buttons, described in XML and rendered by the framework.
 
-![step1-01 The app open, reading Hello World](https://raw.githubusercontent.com/wiki/EGroupware/example/images/step1-01.png)
+![step2-01 The edit dialog](https://raw.githubusercontent.com/wiki/EGroupware/example/images/step2-01.png)
 
-### setup/setup.inc.php
+### templates/default/edit.xet
 
-This file is what makes a directory an application. Setup reads it to find out the app
-exists, what it is called, and what to open when someone clicks it:
+A template is a `.xet` file under `templates/default/`, named after what it shows. Inside,
+one `<template>` element with an id the server refers to it by:
 
-```php
-$setup_info['example']['name']      = 'example';
-$setup_info['example']['version']   = '26.1';
-$setup_info['example']['app_order'] = 5;
-$setup_info['example']['enable']    = 1;
-$setup_info['example']['index']     = 'example.EGroupware\\Example\\Ui.index';
+```xml
+<template id="example.edit" template="" lang="" group="0" version="26.1">
+	<grid width="100%">
+		<columns>
+			<column width="100"/>
+			<column/>
+		</columns>
+		<rows>
+			<row>
+				<et2-description  for="host_name" value="Hostname"></et2-description>
+				<et2-textbox  id="host_name" tabindex="1" maxlength="64"></et2-textbox>
+			</row>
 ```
 
-`name` has to match the directory. `version` is the app's own, and matters more than it
-looks: setup compares it with what is installed to decide whether anything needs doing, so
-every later step that changes the database changes this too.
+The id is `<app>.<file>`, and it has to match: `example.edit` lives in `edit.xet`. A
+mismatch is worth knowing about because the two sides disagree - the server refuses to find
+it, while the browser quietly falls back to the last template in the file.
 
-`index` is the entry point, written as `<app>.<class>.<method>`. The class name is
-fully qualified, which is why the backslashes are doubled inside a double-quoted string.
+Widgets are web components, all prefixed `et2-`. `et2-description` is a label, and its `for`
+points at the field it labels. `et2-textbox` is the input; its **`id` is the name its value
+arrives under**, which is the single most important thing on the line.
 
-`app_order` is where it sits in the navbar, and `enable` = 1 means an ordinary application
-rather than a hidden or admin-only one.
+Buttons work the same way, with an id that says which was pressed:
 
-The rest of the file is who wrote it and what it needs:
-
-```php
-/* Dependencies for this app to work */
-$setup_info['example']['depends'][] = array(
-	'appname'  => 'api',
-	'versions' => array('26.1')
-);
+```xml
+<et2-button  accesskey="s" label="Save" id="button[save]"></et2-button>
+<et2-button  label="Apply" id="button[apply]"></et2-button>
 ```
+
+`button[save]` is an array index, so all the buttons arrive together under `button`, and the
+one that was pressed is the only key in it.
 
 ### src/Ui.php
 
-Classes live under `src/`, in the namespace `EGroupware\<App>`, and are found by that
-name - no registration, no include:
+`edit()` is called **twice for one round trip**: once with `null`, to draw the form, and
+again with whatever the browser submitted.
 
 ```php
-namespace EGroupware\Example;
-
-class Ui
+public function edit(?array $content=null)
 {
-	/**
-	 * Methods callable via the menuaction GET parameter
-	 *
-	 * Anything not listed here cannot be reached from a URL, however public the
-	 * method is.
-	 *
-	 * @var array
-	 */
-	public $public_functions = [
-		'index' => true,
-	];
-
-	public function index(?array $content=null)
+	if (!is_array($content))
 	{
-		echo "Hello World :)";
+		$content = [];
 	}
+	else
+	{
+		// which button was pressed?  Guard the key: a submit can arrive without one.
+		$button = key($content['button'] ?? []);
+		unset($content['button']);
+
+		switch($button)
+		{
+			case 'save':
+			case 'apply':
+				// nowhere to put it yet - the next step gives the app a table
+				Api\Framework::message(lang('Entry saved.'));
+				break;
+		}
+	}
+	$tmpl = new Api\Etemplate('example.edit');
+	$tmpl->exec('example.'.self::class.'.edit', $content);
 }
 ```
 
-`$public_functions` is the one piece of security to understand before writing anything
-else. EGroupware will only call a method from a URL if it is listed there. A method that
-is `public` in the PHP sense but absent from that list cannot be reached by editing the
-address bar - which is exactly what you want for anything a template calls internally.
+`key($content['button'] ?? [])` is worth the `??`. A form can be submitted without any
+button - pressing Enter in a field is enough, and so is a widget that submits on change - so
+the key may not be there at all.
 
-`echo` is not how a real page is built - the next step replaces it with a template - but it
-proves the whole chain works: setup found the app, the framework found the class, and the
-method ran.
+`exec()` takes the method to submit back to, and the content to fill the form with. On the
+first call that content is empty, which draws an empty form.
 
-### templates/default/images/navbar.svg
+`edit` has to be added to `$public_functions` to be reachable, and `index()` now opens the
+dialog rather than echoing:
 
-The navbar icon. An application without one gets a placeholder, which is fine while
-developing and looks unfinished the moment anyone else sees it.
+```php
+public $public_functions = [
+	'index' => true,
+	'edit'  => true,
+];
+```
+
+Nothing is stored yet. Saving reports success and shows you the values back, and they are
+gone on the next reload - the following step gives the app somewhere to put them.
+
+### setup/setup.inc.php
+
+Two changes, and the second is only there to make the first take effect:
+
+```php
+$setup_info['example']['version']   = '26.1.001';
+$setup_info['example']['index']     = 'example.EGroupware\\Example\\Ui.index&ajax=true';
+```
+
+`&ajax=true` is what tells the framework this application draws itself into the page.
+Without it the app is loaded in an iframe, which works but is not how a modern application
+behaves - the header, the sidebox and the browser history all stop cooperating.
+
+### setup/tables_update.inc.php
+
+The entry point is read at install time and stored, so changing `setup.inc.php` alone
+changes nothing on an installation that already exists. Setup only re-reads it when the
+version goes up, and it only walks versions it has a function for:
+
+```php
+/**
+ * Nothing to change in the database - the new version is what makes setup re-read
+ * setup.inc.php, and with it the changed entry point.
+ *
+ * @return string
+ */
+function example_upgrade26_1()
+{
+	return $GLOBALS['setup_info']['example']['currentver'] = '26.1.001';
+}
+```
+
+An upgrade function that changes no data still earns its place: the version bump is the
+mechanism, and the function is what makes the bump reachable. Later steps use the same file
+for real schema changes.
 
 ### lang/egw_en.lang
 
-One line, and it is what gives the application the name people see:
+Everything a user reads goes through `lang()`, and the phrases live in tab-separated files -
+one line per phrase, `phrase`, `app-name`, `language`, translation:
 
 ```
+entry saved.	example	en	Entry saved.
 example	common	en	Example
+hostname	example	en	Hostname
 ```
 
-Tab-separated: the phrase, the application it belongs to, the language, and the translation.
-`common` means any application may use it, which is how the navbar labels ours. `egw_de.lang`
-gives `Beispiel` for the same phrase. Step 2 covers the format properly, once there are
-phrases of our own to add.
+The lookup key is the lower-cased English phrase, which is why `lang('Entry saved.')` finds
+the line beginning `entry saved.`. An app-name of `common` means the phrase is shared with
+every application; anything else belongs to this one.
 
-## Installing it
-
-An application has to be installed before it can be used, and then granted to somebody.
-
-1. Open `<your-egroupware>/setup/`. Two logins are offered: use the upper one,
-   **Setup / config admin login**, with the configuration user and password. The
-   *Header admin login* below it is for editing the configuration file itself and has
-   its own separate password.
-
-   ![step1-02 The Setup login](https://raw.githubusercontent.com/wiki/EGroupware/example/images/step1-02.png)
-
-2. Go to **Manage applications** and find *example* in the list. Tick its box in the
-   *Install* column and submit. Afterwards the row reads `example-OK`, with the same
-   current and available version - which is how you can tell later whether an app needs
-   an update.
-
-   ![step1-03 Install the app in Setup](https://raw.githubusercontent.com/wiki/EGroupware/example/images/step1-03.png)
-
-3. Back in EGroupware, go to *Admin > User groups*, open a group - *Default* is fine - and
-   tick **Example** on its *Applications* tab. That is the list of applications the group's
-   members may use.  (Setup lists applications by name, `example`; everywhere a user sees
-   one it is the title, *Example* - the translation above.)
-
-   ![step1-04 Admin's User groups list](https://raw.githubusercontent.com/wiki/EGroupware/example/images/step1-04.png)
-
-   ![step1-05 Granting run rights to a group](https://raw.githubusercontent.com/wiki/EGroupware/example/images/step1-05.png)
-
-Installing and granting are separate on purpose: an installed application that nobody has
-rights to is invisible, which is how an administrator stages something before letting
-people at it.
+Editing these by hand is fine for a few lines. The
+[developer](https://github.com/EGroupware/developer) app's **TranslationTools** does it
+properly, and translators work from <https://translation.egroupware.org/> rather than in the
+repository.
 
 ## Try it
 
-1. Log in and look at the navbar: **Example** is there.
-2. Click it. The page says `Hello World :)`.
+1. In Setup, run the update for *example* - it goes to 26.1.001.
+2. Open **Example**. Instead of the greeting there is a form with Hostname and Description.
+3. Fill both in and press **Save**. A message says *Entry saved.* and the values are still
+   on screen.
+4. Reload the page. The form is empty again: nothing was stored.
 
 ### Troubleshooting
 
-**Example is missing from the navbar,** even after logging back in - use *Admin > Clear
-cache/register hooks*. The list of installed applications is cached server-side, and that
-cache outlives your session, so a new login alone will not pick the app up.
+**The version is right but the app is still in an iframe** - the list of installed
+applications is cached, and the running webserver may still be holding the old entry point.
+*Admin > Clear cache/register hooks* fixes it. This bites in particular if you ran the
+update with `setup/setup-cli.php` rather than in the browser: the command line and the
+webserver use different cache backends, so invalidating one leaves the other stale.
 
-**Example is in the navbar but clicking it gives an error** - the `index` entry point does
-not resolve. Check the class name in `setup.inc.php` matches the namespace and class in
-`src/Ui.php`, and that the method is in `$public_functions`.
+**The update does nothing** - setup skips an application whose installed version already
+matches `setup.inc.php`. Check what is actually installed before assuming the function is
+wrong.
 
-**Setup does not offer the app at all** - the directory name and `$setup_info` key have to
-match, and `setup/setup.inc.php` has to be readable by the webserver.
+**`Template example.edit not found`** - the template id and the filename have to match.
 
---> continue to [step 2](https://github.com/EGroupware/example/tree/step2), which replaces
-the echo with a real dialog
+**Changes in `.xet` files do not show up** - templates are cached. *Admin > Clear
+cache/register hooks*.
+
+--> continue to [step 3](https://github.com/EGroupware/example/tree/step3), which gives the
+app a table to store hosts in

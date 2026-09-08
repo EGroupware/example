@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE overlay PUBLIC "-//EGroupware GmbH//eTemplate 2.0//EN" "https://www.egroupware.org/etemplate2.0.dtd">
+<overlay>
+	<template id="example.edit" template="" lang="" group="0" version="26.1">
+		<grid width="100%">
+			<columns>
+				<column width="100"/>
+				<column/>
+			</columns>
+			<rows>
+				<row>
+					<et2-description  for="host_name" value="Hostname"></et2-description>
+					<et2-textbox  id="host_name" tabindex="1" maxlength="64"></et2-textbox>
+				</row>
+				<row>
+					<et2-description  for="host_description" value="Description"></et2-description>
+					<et2-textarea  id="host_description" tabindex="2" rows="7"></et2-textarea>
+				</row>
+				<row>
+					<et2-hbox  span="all" width="100%">
+						<et2-button  accesskey="s" label="Save" id="button[save]"></et2-button>
+						<et2-button  label="Apply" id="button[apply]"></et2-button>
+					</et2-hbox>
+				</row>
+			</rows>
+		</grid>
+	</template>
+</overlay>
