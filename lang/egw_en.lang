@@ -1,3 +1,5 @@
+%1 host(s) deleted.	example	en	%1 host(s) deleted.
+delete this host(s)	example	en	Delete this host(s)
 do you really want to delete this host?	example	en	Do you really want to delete this host?
 entry deleted.	example	en	Entry deleted.
 entry saved.	example	en	Entry saved.
@@ -5,3 +7,4 @@ error deleting entry!	example	en	Error deleting entry!
 error storing entry!	example	en	Error storing entry!
 example	common	en	Example
 hostname	example	en	Hostname
+unknown action %1!	example	en	Unknown action %1!

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE overlay PUBLIC "-//EGroupware GmbH//eTemplate 2.0//EN" "https://www.egroupware.org/etemplate2.0.dtd">
+<overlay>
+	<template id="example.index.header" template="" lang="" group="0" version="26.1">
+		<et2-toolbar id="toolbar">
+			<et2-button-icon statustext="Add" id="add" image="add" slot="prefix"
+				onclick="egw(window).openPopup(egw::link('/index.php','menuaction=example.EGroupware\\Example\\Ui.edit'),'640','480','_blank','example',null,true); return false;"
+				noSubmit="true"></et2-button-icon>
+			<template template="api.search-button" slot="prefix"></template>
+		</et2-toolbar>
+	</template>
+	<template id="example.index.rows" template="" lang="" group="0" version="26.1">
+		<grid width="100%">
+			<columns>
+				<column width="15"/>
+				<column width="15%"/>
+				<column width="40%"/>
+				<column width="120"/>
+				<column width="120"/>
+			</columns>
+			<rows>
+				<row class="th">
+					<et2-nextmatch-sortheader label="#" id="host_id"/>
+					<et2-nextmatch-sortheader label="Name" id="host_name"/>
+					<et2-nextmatch-header label="Description" id="host_description"/>
+					<et2-vbox>
+						<et2-nextmatch-sortheader label="Created" id="host_created"/>
+						<et2-nextmatch-header-account id="host_creator" emptyLabel="Creator"/>
+					</et2-vbox>
+					<et2-vbox>
+						<et2-nextmatch-sortheader label="Last modified" id="host_modified"/>
+						<et2-nextmatch-header-account id="host_modifier" emptyLabel="Modified by"/>
+					</et2-vbox>
+				</row>
+				<row class="$class">
+					<et2-description id="host_id"></et2-description>
+					<et2-description id="host_name"></et2-description>
+					<et2-description id="host_description"></et2-description>
+					<et2-vbox>
+						<et2-date-time id="host_created" readonly="true"></et2-date-time>
+						<et2-select-account id="host_creator" readonly="true"></et2-select-account>
+					</et2-vbox>
+					<et2-vbox>
+						<et2-date-time id="host_modified" readonly="true"></et2-date-time>
+						<et2-select-account id="host_modifier" readonly="true"></et2-select-account>
+					</et2-vbox>
+				</row>
+			</rows>
+		</grid>
+		<et2-styles src="rows.css"></et2-styles>
+	</template>
+	<template id="example.index" template="" lang="" group="0" version="26.1">
+		<template template="example.index.header" slot="main-header"></template>
+		<et2-nextmatch id="nm" template="example.index.rows"></et2-nextmatch>
+	</template>
+</overlay>

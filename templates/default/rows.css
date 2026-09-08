@@ -1,0 +1,13 @@
+/**
+ * EGroupware - Example - styles for the host list rows
+ *
+ * Pulled into the datagrid's row shadow DOM by the et2-styles tag in index.xet.
+ * Ordinary application CSS does not reach inside there.
+ */
+
+et2-description#host_description {
+	display: block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
