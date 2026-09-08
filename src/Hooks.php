@@ -127,4 +127,28 @@ class Hooks
 			Api\Acl::DELETE => 'delete',
 		];
 	}
+
+	/**
+	 * What each user may choose for themselves
+	 *
+	 * Returned to the preferences application, which builds the page, stores what is
+	 * chosen, and resolves it against any group default, installation default or
+	 * forced value before we ever see it.
+	 *
+	 * @return array preference name => definition
+	 */
+	public static function settings()
+	{
+		return [
+			'default_cat' => [
+				'type'   => 'select-cat',
+				'label'  => 'Default category for new hosts',
+				'name'   => 'default_cat',
+				'values' => [],
+				'help'   => 'Preselected when you add a host.',
+				'xmlrpc' => true,
+				'admin'  => false,
+			],
+		];
+	}
 }

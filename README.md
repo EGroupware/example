@@ -10,115 +10,114 @@
 8. Step: [categories](https://github.com/EGroupware/example/tree/step8)
 9. Step: [access control](https://github.com/EGroupware/example/tree/step9)
 10. Step: [telling everyone else](https://github.com/EGroupware/example/tree/step10)
+11. Step: [settings for the whole installation](https://github.com/EGroupware/example/tree/step11)
 
-## 11. Step: settings for the whole installation
+## 12. Step: settings each user chooses
 
-An application can have settings of its own: decisions an administrator makes once, for
-everybody, about how this installation behaves. This step adds one - whether a host must
-have a description - and enforces it.
+The last step was a rule for everybody. This one is a choice each user makes for themselves:
+which category a host they add starts in.
 
-![step11-01 The app's configuration page](https://raw.githubusercontent.com/wiki/EGroupware/example/images/step11-01.png)
-
-Configuration is for rules about the installation, not for personal taste. A default a user
-should be able to change for themselves is a *preference*, which is the next step.
-
-### templates/default/config.xet
-
-The page is an ordinary template. The administration application looks for one named
-`<app>.config` and renders it, so there is no controller to write:
-
-```xml
-<template id="example.config">
-	<grid width="100%" class="admin-config egwGridView_grid">
-		<columns>
-			<column width="60%"/>
-			<column/>
-		</columns>
-		<rows>
-			<row>
-				<et2-description  value="Require a description for every host" label="%s:"></et2-description>
-				<et2-select  id="newsettings[require_description]">
-					<option value="">No</option>
-					<option value="1">Yes</option>
-				</et2-select>
-			</row>
-		</rows>
-	</grid>
-</template>
-```
-
-Every setting lives under **`newsettings[…]`** - that is the name the administration
-application reads and writes; an id outside it is simply ignored. Any widget works: a setting
-is only a value with a label.
+![step12-01 The app's preferences](https://raw.githubusercontent.com/wiki/EGroupware/example/images/step12-01.png)
 
 ### src/Hooks.php
 
-The page needs a way in, which is the admin section from step 7:
+Preferences are declared rather than drawn. The `settings` hook returns what the application
+offers, and the preferences application builds the page and stores what is chosen:
 
 ```php
-'Site Configuration' => Api\Egw::link('/index.php', [
-	'menuaction' => 'admin.admin_config.index',
-	'appname'    => Bo::APP,
-	'ajax'       => 'true',
-]),
-```
-
-`admin.admin_config.index` is the administration application's own page; `appname` is all it
-needs to find our template and store what is set on it. The entry appears under our
-application's name, and reads *App configuration* - that is what the phrase
-`Site Configuration` is translated to.
-
-### src/Ui.php
-
-A setting nobody reads changes nothing. `Api\Config::read()` answers what is stored for an
-application, and the rule is applied before anything is written:
-
-```php
-// An installation can insist on a description.  The browser could
-// check this too, and should, but the server is the only place the
-// rule can actually be enforced.
-$config = Api\Config::read(Bo::APP);
-if (!empty($config['require_description']) && empty($content['host_description']))
+public static function settings()
 {
-	Api\Etemplate::set_validation_error('host_description',
-		lang('Description is required'));
-	break;	// no save, and the dialog comes back with the error on it
+	return [
+		'default_cat' => [
+			'type'   => 'select-cat',
+			'label'  => 'Default category for new hosts',
+			'name'   => 'default_cat',
+			'values' => [],
+			'help'   => 'Preselected when you add a host.',
+			'xmlrpc' => true,
+			'admin'  => false,
+		],
+	];
 }
 ```
 
-`set_validation_error()` names the widget the message belongs to, so the dialog comes back
-with the error attached to the field rather than as a toast the user has to interpret. The
-`break` leaves the switch without saving, and execution falls through to the same `exec()`
-that drew the form in the first place.
+`type` picks the widget - `select-cat` gives the category selector, and `values` stays empty
+because that widget fills itself. `help` is the text under the setting, and it is worth
+writing: a preference nobody understands is a preference nobody changes.
 
-Doing this on the server is the point. A browser can check a field is filled in, and should,
-because it saves a round trip and tells the user sooner - but a browser is also the one part
-of this whole arrangement an attacker controls. A rule that only exists in the client is a
-suggestion.
+`admin => false` means an ordinary user may set it; `true` would restrict it to an
+administrator editing somebody's preferences for them.
+
+Declared like every other hook:
+
+```php
+$setup_info['example']['hooks']['settings'] = 'EGroupware\\Example\\Hooks::settings';
+```
+
+### src/Ui.php
+
+Reading it back is one line, and the reason it is only one line is the interesting part:
+
+```php
+// Preselect the category this user chose.  What arrives here is already
+// the effective preference, so there is nothing to fall back to: the
+// preference system has resolved user, group, installation default and
+// anything an administrator forced, before we are asked.
+$content['cat_id'] = $GLOBALS['egw_info']['user']['preferences'][Bo::APP]['default_cat'] ?? null;
+```
+
+There is no fallback to write, and writing one would be a mistake. A preference is resolved
+before an application sees it, in this order:
+
+| | |
+|---|---|
+| **forced** | an administrator has decided nobody may choose - wins outright |
+| **session** | set for this login only, eg. a language chosen at sign-in |
+| **user** | what this user chose on the preferences page |
+| **group** | a default for a group they belong to |
+| **default** | the installation-wide default |
+
+So an administrator who wants every user to start in *Production* does not need anything from
+us: they set that as a **default preference**, under *Preferences > Default preferences for
+Example*, and users who have not chosen otherwise get it. If they want it settled and not
+negotiable, they force it instead, and the preferences page stops offering the choice.
+
+That is the distinction worth carrying away from the last two steps. A rule about the
+installation is configuration, which the application reads and enforces. A default a user may
+override is a preference, and the preference system already knows how to layer those - so an
+application that reaches for `Api\Config` to default a user's choice is doing a worse job of
+something the framework does properly.
 
 ## Try it
 
-1. **Admin > Applications > Example > App configuration**: set *Require a description for
-   every host* to **Yes** and save.
-2. Add a host, fill in only the hostname, and press **Save**. It does not save, and the
-   description field is marked with *Description is required*.
-3. Fill the description in and save again. It works.
-4. Set the configuration back to **No**. A host with no description saves fine.
+You need two categories from step 8.
+
+1. Open **Preferences > Example**. There is *Default category for new hosts*, set to
+   *Use default*.
+2. Set it to `Staging` and save.
+3. In Example, click **Add**. The category is already `Staging`.
+4. Set the preference back to *Use default*, and add another host: no category.
+5. Now as an administrator, go to *Preferences > Default preferences for Example* and set
+   `Production` there. Add a host as a user who has made no choice of their own - it starts
+   in `Production`, with no code in this application involved.
 
 ### Troubleshooting
 
-**The configuration page is empty** - the template has to be named exactly `example.config`,
-and the file has to be `templates/default/config.xet`.
+**Example has no preferences page** - the `settings` hook is declared but not registered.
+*Admin > Clear cache/register hooks*. If it survives that, the server is still holding the
+old hook list: restart php-fpm.
 
-**Settings look saved but nothing is stored** - the widget ids have to be inside
-`newsettings[…]`.
+**The setting appears but changing it has no effect** - the name in the returned array, its
+`name` key, and the key read from `$GLOBALS['egw_info']['user']['preferences']` all have to
+be the same string.
 
-**The rule never triggers** - `Api\Config::read()` takes the application name, and the key
-has to match the id inside `newsettings[…]`.
+**The category selector is empty** - there are no categories for this application yet;
+step 8 covers making them.
 
-**A changed setting does not take effect** - configuration is cached; *Admin > Clear
-cache/register hooks*. While developing templates, a browser can also hold onto an old copy
-of a `.xet` - a forced refresh rules that out.
+**A stored preference points at a category that no longer exists** - the selector shows
+nothing selected and the value simply does not apply. Deleting a category does not go and
+tidy up everybody's preferences.
 
---> continue to [step 12](https://github.com/EGroupware/example/tree/step12), which lets each
-user choose for themselves
+That is the last step. The finished application is on
+[master](https://github.com/EGroupware/example), which is where to start reading if you want
+the whole thing at once rather than a step at a time.

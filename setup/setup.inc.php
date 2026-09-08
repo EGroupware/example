@@ -33,6 +33,7 @@ $setup_info['example']['hooks']['search_link'] = 'EGroupware\\Example\\Hooks::se
 $setup_info['example']['hooks']['admin'] = 'EGroupware\\Example\\Hooks::admin';
 $setup_info['example']['hooks']['categories'] = 'EGroupware\\Example\\Hooks::categories';
 $setup_info['example']['hooks']['acl_rights'] = 'EGroupware\\Example\\Hooks::acl_rights';
+$setup_info['example']['hooks']['settings'] = 'EGroupware\\Example\\Hooks::settings';
 
 /* Dependencies for this app to work */
 $setup_info['example']['depends'][] = array(

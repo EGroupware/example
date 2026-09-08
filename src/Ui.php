@@ -68,6 +68,12 @@ class Ui
 			else
 			{
 				$content = $this->bo->init();
+
+				// Preselect the category this user chose.  What arrives here is already
+				// the effective preference, so there is nothing to fall back to: the
+				// preference system has resolved user, group, installation default and
+				// anything an administrator forced, before we are asked.
+				$content['cat_id'] = $GLOBALS['egw_info']['user']['preferences'][Bo::APP]['default_cat'] ?? null;
 			}
 		}
 		else
