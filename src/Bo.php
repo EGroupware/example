@@ -31,6 +31,16 @@ class Bo extends Api\Storage
 	const EXTRA_TABLE = 'egw_example_extra';
 
 	/**
+	 * What the current user may do, and to whose hosts
+	 *
+	 * account_id => rights.  Every user implicitly has all rights on their own,
+	 * plus whatever other users have granted them.
+	 *
+	 * @var array
+	 */
+	protected $grants;
+
+	/**
 	 * Constructor
 	 */
 	public function __construct()
@@ -45,13 +55,16 @@ class Bo extends Api\Storage
 		// set_times() also makes $this->now an Api\DateTime, which save() stores.
 		$this->set_times('object');
 		$this->convert_all_timestamps();
+
+		$this->grants = $GLOBALS['egw']->acl->get_grants(self::APP);
 	}
 
 	/**
 	 * Save a host
 	 *
-	 * Reimplemented to record who created and last changed it, and to store the
-	 * links the dialog collected while the host had no id yet.
+	 * Reimplemented to record who created and last changed it, to store the links the
+	 * dialog collected while the host had no id yet, and to refuse a change the user
+	 * is not allowed to make.
 	 *
 	 * @param array $keys =null if given, copied to data before saving
 	 * @param string|array $extra_where =null extra where clause
@@ -61,6 +74,14 @@ class Bo extends Api\Storage
 	{
 		$this->data_merge($keys);
 
+		// Changing an existing host needs edit rights on it.  The user interface does
+		// not offer the attempt, so reaching here means something went around it.
+		// Check against the stored host, not the submitted one: the dialog has no
+		// owner field, and a client must not be able to decide who owns an entry.
+		if (!empty($this->data['host_id']) && !$this->check_perms(Api\Acl::EDIT, $this->stored()))
+		{
+			throw new Api\Exception\NoPermission();
+		}
 		if (empty($this->data['host_id']))
 		{
 			$this->data['host_creator'] = $GLOBALS['egw_info']['user']['account_id'];
@@ -82,8 +103,10 @@ class Bo extends Api\Storage
 	/**
 	 * Delete a host
 	 *
-	 * Reimplemented to remove its links as well, so the entries on the other side
-	 * do not keep pointing at a host that is gone.
+	 * Reimplemented to remove its links as well, so the entries on the other side do
+	 * not keep pointing at a host that is gone, and to delete only what the user is
+	 * allowed to - deleting several at once must not stop at the first one it may not
+	 * touch.
 	 *
 	 * @param array|int $keys =null host_id, or col => value pairs, or null for the loaded host
 	 * @param boolean $only_return_query =false not supported, part of the parent signature
@@ -97,6 +120,12 @@ class Bo extends Api\Storage
 		}
 		$host_id = $keys === null ? $this->data['host_id'] : $keys['host_id'];
 
+		// read() already refuses a host we may not even see
+		if (!($host = $this->read(['host_id' => $host_id])) ||
+			!$this->check_perms(Api\Acl::DELETE, $host))
+		{
+			return 0;
+		}
 		if (($deleted = parent::delete($keys)) && $host_id)
 		{
 			Api\Link::unlink(0, self::APP, $host_id);
@@ -152,5 +181,90 @@ class Bo extends Api\Storage
 		$options['total'] = $need_count ? $this->total : count($result);
 
 		return $result;
+	}
+
+	/**
+	 * The host as it is stored, regardless of what has been merged into data
+	 *
+	 * read() replaces $this->data, which we are in the middle of using, so it is put
+	 * back afterwards.
+	 *
+	 * @return array the stored host, or an empty array if it is not there
+	 */
+	protected function stored()
+	{
+		$backup =& $this->data;
+		unset($this->data);
+		$stored = parent::read(['host_id' => $backup['host_id']]);
+		$this->data =& $backup;
+
+		return $stored ?: [];
+	}
+
+	/**
+	 * May the current user do $required to this host?
+	 *
+	 * @param int $required Api\Acl::READ, EDIT or DELETE
+	 * @param array $host the host to check, as read() returns it
+	 * @return boolean
+	 */
+	public function check_perms($required, array $host)
+	{
+		return (bool)(($this->grants[$host['host_creator']] ?? 0) & $required);
+	}
+
+	/**
+	 * Search hosts
+	 *
+	 * Reimplemented to only ever return hosts the user is allowed to see.  Every read
+	 * path ends up here - the list, the link dialog, an action re-applying a stored
+	 * filter - so this is the one place the permission filter cannot be gone around.
+	 *
+	 * @param array|string $criteria
+	 * @param boolean|string|array $only_keys
+	 * @param string $order_by
+	 * @param string|array $extra_cols
+	 * @param string $wildcard
+	 * @param boolean $empty
+	 * @param string $op
+	 * @param boolean|int $start
+	 * @param array $filter
+	 * @param string $join
+	 * @param boolean $need_full_no_count
+	 * @return array|null
+	 */
+	public function &search($criteria, $only_keys=true, $order_by='', $extra_cols='', $wildcard='', $empty=false,
+		$op='AND', $start=false, $filter=null, $join='', $need_full_no_count=false)
+	{
+		$filter = (array)$filter;
+		$permitted = array_keys($this->grants);
+
+		// The list offers a Creator filter of its own, so do not simply overwrite what
+		// the caller asked for: narrow it instead.  Replacing it would quietly widen
+		// their filter back out to everything they may see.
+		$filter['host_creator'] = isset($filter['host_creator']) && $filter['host_creator'] !== '' ?
+			array_intersect((array)$filter['host_creator'], $permitted) : $permitted;
+
+		return parent::search($criteria, $only_keys, $order_by, $extra_cols, $wildcard, $empty,
+			$op, $start, $filter, $join, $need_full_no_count);
+	}
+
+	/**
+	 * Read a host
+	 *
+	 * Reimplemented to answer false for a host the user may not read.  Deliberately
+	 * the same answer as for one that does not exist, so nobody can discover which
+	 * hosts are there by asking for them one id at a time.
+	 *
+	 * @param array|int $keys
+	 * @param string|array $extra_cols
+	 * @param string $join
+	 * @return array|boolean the host, or false
+	 */
+	public function read($keys, $extra_cols='', $join='')
+	{
+		$host = parent::read($keys, $extra_cols, $join);
+
+		return $host && $this->check_perms(Api\Acl::READ, $host) ? $host : false;
 	}
 }

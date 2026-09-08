@@ -7,167 +7,215 @@
 5. Step: [linking hosts to other entries](https://github.com/EGroupware/example/tree/step5)
 6. Step: [code that runs in the browser](https://github.com/EGroupware/example/tree/step6)
 7. Step: [custom fields](https://github.com/EGroupware/example/tree/step7)
+8. Step: [categories](https://github.com/EGroupware/example/tree/step8)
 
-## 8. Step: categories
+## 9. Step: access control
 
-Custom fields let an administrator add *fields*. Categories let users sort entries into
-groups the API already knows how to manage, share and colour. A host gets one, the list gets
-a column for it - and the app gets its first real filter.
+Every host so far has belonged to whoever created it, and everybody has seen all of them.
+This step makes that real: you see your own hosts, plus the hosts of anyone who has granted
+you rights, and you can only change what you have been allowed to change.
 
-![step8-01 The category column and filter](https://raw.githubusercontent.com/wiki/EGroupware/example/images/step8-01.png)
-
-### One more column
-
-The same schema-change pattern as the last step: describe it for a fresh install, and write
-the upgrade for the installations that already exist.
-
-```php
-'cat_id' => array('type' => 'int','meta' => 'category','precision' => '4','default' => '0','comment' => 'category')
-```
-
-```php
-function example_upgrade26_1_003()
-{
-	$GLOBALS['egw_setup']->oProc->AddColumn('egw_example', 'cat_id', array(
-		'type' => 'int',
-		'meta' => 'category',
-		'precision' => '4',
-		'default' => '0',
-		'comment' => 'category'
-	));
-
-	return $GLOBALS['setup_info']['example']['currentver'] = '26.1.004';
-}
-```
-
-`meta => 'category'` is what marks the column as holding a category id rather than any
-integer. The column is called `cat_id` because that is the name the rest of EGroupware uses
-for it.
+![step9-01 A host belonging to another user, shown read-only](https://raw.githubusercontent.com/wiki/EGroupware/example/images/step9-01.png)
 
 ### src/Hooks.php
 
-Answering the `categories` hook is what puts the application in the category
-administration's list:
+Rights are granted by one user to another, in the ACL administration. The `acl_rights` hook
+is what that page offers as tick-boxes:
 
 ```php
-public static function categories($location)
+public static function acl_rights($params)
 {
-	unset($location);	// not used, but part of the hook signature
+	unset($params);	// not used, but part of the hook signature
 
-	return true;
+	return [
+		Api\Acl::READ   => 'read',
+		Api\Acl::EDIT   => 'edit',
+		Api\Acl::DELETE => 'delete',
+	];
 }
 ```
 
-That is the whole implementation - the hook is a question ("do you use categories?"), and
-returning true is the answer. Declared as usual:
+Offer only rights the application actually enforces. Each one here is checked below.
+
+### src/Bo.php
+
+`get_grants()` answers what the current user may do and to whose hosts, as
+`account_id => rights`. A user always has every right on their own entries, so the list is
+"me, plus anyone who has granted me something":
 
 ```php
-$setup_info['example']['hooks']['categories'] = 'EGroupware\\Example\\Hooks::categories';
+$this->grants = $GLOBALS['egw']->acl->get_grants(self::APP);
 ```
-
-Somewhere to maintain them belongs in the admin section from the last step, next to the
-custom fields:
 
 ```php
-'Global Categories' => Api\Egw::link('/index.php', [
-	'menuaction'  => 'admin.admin_categories.index',
-	'appname'     => Bo::APP,
-	'global_cats' => true,
-	'ajax'        => 'true',
-]),
-```
-
-### The templates
-
-On the dialog, one widget. `application="example"` matters: without it you get whichever
-application's categories the widget guesses at.
-
-```xml
-<et2-description  for="cat_id" value="Category"></et2-description>
-<et2-select-cat  id="cat_id" application="example" emptyLabel="None"></et2-select-cat>
-```
-
-`emptyLabel` is what lets a host have no category at all; without it the first category is
-preselected and the field is effectively mandatory.
-
-In the list, a sortable header and a read-only cell:
-
-```xml
-<et2-nextmatch-sortheader label="Category" id="cat_id"/>
-```
-
-```xml
-<et2-select-cat id="cat_id" application="example" readonly="true"></et2-select-cat>
-```
-
-### The filter, and where filters live
-
-The list has offered no filters so far, which is why `index()` switched them off:
-
-```php
-'no_filter'           => true,	// we offer no filter ...
-'no_filter2'          => true,	// ... and no second one
-```
-
-Now that hosts have categories, there is something worth filtering by, so `no_cat` comes off
-that list and the category filter appears.
-
-It appears in the **filterbox**, the panel of filters beside the search box. You do not build
-it: it is generated from the list's own row template, by collecting the header widgets that
-can filter - `et2-nextmatch-header-account` and `et2-nextmatch-header-customfields` from the
-earlier steps are already in there, alongside the category filter. Settings like `no_filter`
-and `no_cat` are how a list says which of the standard filters it does not want. The filterbox
-can be customised further when an application needs it to be.
-
-The filter still has to reach the database. It arrives as its own query field rather than in
-`col_filter`, so `get_rows()` maps it across:
-
-```php
-if ((string)($query['cat_id'] ?? '') !== '')
+public function check_perms($required, array $host)
 {
-	$query['col_filter']['cat_id'] = $query['cat_id'];
-}
-else
-{
-	// nothing selected: drop it, or the last choice would filter forever
-	unset($query['col_filter']['cat_id']);
+	return (bool)(($this->grants[$host['host_creator']] ?? 0) & $required);
 }
 ```
 
-The `else` branch is not optional - mapping only when a category *is* selected leaves the
-previous one in the stored query, and the list keeps filtering by a category the user has
-already cleared. The mapping also happens **before** the query is stored in the session, so
-an action running on *select all* filters exactly as the list did.
+**Where the filter goes matters more than what it says.** Put it in the user interface and
+every new list, search or action has to remember it. Put it in `search()` and there is
+nowhere left to forget it, because every read path ends up there - the list, the link
+dialog, an action re-applying a stored filter:
+
+```php
+public function &search($criteria, $only_keys=true, $order_by='', $extra_cols='', $wildcard='', $empty=false,
+	$op='AND', $start=false, $filter=null, $join='', $need_full_no_count=false)
+{
+	$filter = (array)$filter;
+	$permitted = array_keys($this->grants);
+
+	// The list offers a Creator filter of its own, so do not simply overwrite what
+	// the caller asked for: narrow it instead.  Replacing it would quietly widen
+	// their filter back out to everything they may see.
+	$filter['host_creator'] = isset($filter['host_creator']) && $filter['host_creator'] !== '' ?
+		array_intersect((array)$filter['host_creator'], $permitted) : $permitted;
+
+	return parent::search($criteria, $only_keys, $order_by, $extra_cols, $wildcard, $empty,
+		$op, $start, $filter, $join, $need_full_no_count);
+}
+```
+
+`get_rows()` calls `search()`, so the list is covered without touching it. So is the link
+dialog from step 5, which was written before any of this existed.
+
+Narrowing rather than overwriting matters because the list already filters on this very
+column - the Creator header from step 4. Assigning over it would leave someone who picked one
+creator looking at every host they are allowed to see, with the filter apparently on. When
+the two have nothing in common the result is an empty set, and an empty set here means no
+rows, which is the right way for it to fail.
+
+Reading one host by its id does not go through `search()`, so `read()` checks for itself:
+
+```php
+public function read($keys, $extra_cols='', $join='')
+{
+	$host = parent::read($keys, $extra_cols, $join);
+
+	return $host && $this->check_perms(Api\Acl::READ, $host) ? $host : false;
+}
+```
+
+It answers `false` for a host you may not read - deliberately the same answer as for one that
+does not exist, so nobody can find out which hosts are there by asking for them an id at a
+time.
+
+Deleting checks per host, and carries on with the rest:
+
+```php
+// read() already refuses a host we may not even see
+if (!($host = $this->read(['host_id' => $host_id])) ||
+	!$this->check_perms(Api\Acl::DELETE, $host))
+{
+	return 0;
+}
+```
+
+That is what makes deleting a mixed selection behave: the ones you may delete go, the ones
+you may not stay, and the message counts what actually happened.
+
+Saving refuses outright, because nothing in the interface should have offered it. It checks
+the *stored* host rather than the submitted one - the dialog has no owner field, and a client
+must not be able to decide who owns an entry:
+
+```php
+if (!empty($this->data['host_id']) && !$this->check_perms(Api\Acl::EDIT, $this->stored()))
+{
+	throw new Api\Exception\NoPermission();
+}
+```
+
+### src/Ui.php
+
+The interface's job is to not offer what will be refused. Each row is told what may be done
+to it:
+
+```php
+if (!$this->bo->check_perms(Api\Acl::EDIT, $row))
+{
+	$row['class'] .= ' rowNoEdit';
+}
+if (!$this->bo->check_perms(Api\Acl::DELETE, $row))
+{
+	$row['class'] .= ' rowNoDelete';
+}
+```
+
+and the actions say which class disables them:
+
+```php
+'disableClass' => 'rowNoEdit',
+```
+
+This is per row, not per selection, which is the point. Select ten hosts of which you may
+delete seven, and *Delete* is still offered - it simply applies to the seven.
+
+The dialog does the same thing for a single host:
+
+```php
+$readonlys = [
+	'button[delete]' => empty($content['host_id']) ||
+		!$this->bo->check_perms(Api\Acl::DELETE, $content),
+];
+// read-only rights: show the host, but let nothing be changed or saved
+if (!empty($content['host_id']) && !$this->bo->check_perms(Api\Acl::EDIT, $content))
+{
+	$readonlys['__ALL__'] = true;
+}
+```
+
+`__ALL__` makes every widget on the template read-only, and the `hideOnReadonly` from step 6
+takes Save, Apply and Delete away with it.
+
+### js/app.ts
+
+The view dialog needs the same treatment. It already has the answer in the row it was given -
+the class the list put there:
+
+```ts
+// the row carries what may be done to it, the same signal the context menu uses
+const canEdit = !String(values.content.class || '').includes('rowNoEdit');
+```
+
+and offers *Edit* only when that is true. One decision, made on the server, used by the
+context menu and the dialog alike.
 
 ## Try it
 
-You need at least one category first: **Admin > Applications > Example > Global categories**.
-Add `Production` and `Staging`.
+You need a second user, and something of theirs to look at. Create one in
+*Admin > User accounts* if there is not one already, and give them run rights to Example.
 
-1. Open a host, choose a category, **Save**.
-2. The list has a **Category** column showing it, and sorts by it when you click the header.
-3. Open the filterbox beside the search box: there is a category filter. Choose `Production`
-   and the list narrows to those hosts.
-4. Reload the page - the filter is still applied, because the query is kept in the session.
-5. With the filter still active, press *Select all*: only the hosts the filter shows are
-   selected. An action run on that selection uses the same query the list did - add a
-   throwaway host if you want to prove it by deleting one.
-6. Clear the filter back to *All*. Every host is listed again.
+1. Log in as the second user, add a host, log out.
+2. As yourself, open **Example**. Their host is not in the list - you have no rights to it.
+3. Try to open it anyway by putting its id in the URL:
+   `…menuaction=example.EGroupware\Example\Ui.edit&host_id=<their id>`. You get an empty
+   form and *Entry not found!* - the identical answer a host that really does not exist
+   gives, which is the point: the two cannot be told apart.
+4. In *Admin > User accounts*, use the second user's context menu to grant yourself **read**
+   on their Example entries.
+5. Reload the list. Their host is there now. Right-click it: *Edit* and *Delete* are greyed
+   out, *View* is not.
+6. Add a throwaway host of your own, then select it **and** theirs and press *Delete*. The
+   action is offered because part of the selection allows it, only your own goes, and the
+   message counts one.
 
 ### Troubleshooting
 
-**The category selector is empty, or offers another application's categories** - the widget
-needs `application="example"`.
+**The list is empty** - you have no grants at all, which should not happen: everyone has
+rights to their own entries. Check `host_creator` is actually being set on save.
 
-**Categories cannot be created for Example** - the `categories` hook is not registered.
-*Admin > Clear cache/register hooks*. If it survives that, the server is still holding the
-old hook list: restart php-fpm.
+**"No permission to access application Example"** - that is run rights, not this step. They
+live in the same ACL table but under the location `run`; *Admin > User groups* grants them.
 
-**A filter keeps applying after you clear it** - the `else` branch above is missing, so the
-old value stays in the session query.
+**Actions are greyed out on rows you own** - `host_creator` does not match your account id,
+or `check_perms()` is being given a row that has not got that column.
 
-**The column shows a number instead of a name** - the cell is not an `et2-select-cat`, or is
-missing `application`.
+**A user can still see entries after a grant is removed** - grants are cached per request;
+reload rather than trusting a stale page.
 
---> continue to [step 9](https://github.com/EGroupware/example/tree/step9), which adds access
-control
+**Filtering by Creator shows more than it should** - the permission filter is assigning over
+the column filter instead of intersecting with it.
+
+--> continue to [step 10](https://github.com/EGroupware/example/tree/step10), which pushes
+changes to other users' open lists

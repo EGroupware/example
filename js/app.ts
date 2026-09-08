@@ -48,6 +48,9 @@ class ExampleApp extends EgwApp
 			readonlys: {__ALL__: true}
 		};
 
+		// the row carries what may be done to it, the same signal the context menu uses
+		const canEdit = !String(values.content.class || '').includes('rowNoEdit');
+
 		const dialog = new Et2Dialog(this.egw);
 		dialog.transformAttributes({
 			title: this.egw.lang('View host'),
@@ -56,9 +59,11 @@ class ExampleApp extends EgwApp
 			type: Et2Dialog.PLAIN_MESSAGE,
 			// button_id is what the dialog reports back to the callback, and a custom
 			// button may use any non-numeric string for it
-			buttons: [
+			buttons: canEdit ? [
 				{button_id: 'close', label: this.egw.lang('Close'), id: 'close', image: 'close'},
 				{button_id: 'edit', label: this.egw.lang('Edit'), id: 'edit', image: 'edit'}
+			] : [
+				{button_id: 'close', label: this.egw.lang('Close'), id: 'close', image: 'close'}
 			],
 			callback: (_button) =>
 			{

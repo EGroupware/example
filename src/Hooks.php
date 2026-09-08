@@ -102,4 +102,24 @@ class Hooks
 
 		return true;
 	}
+
+	/**
+	 * The rights an owner can grant another user on their hosts
+	 *
+	 * This is what the ACL administration offers as tick-boxes, and the values are
+	 * what Bo::check_perms() tests against.
+	 *
+	 * @param array|string $params hook parameters, not used
+	 * @return array right => label
+	 */
+	public static function acl_rights($params)
+	{
+		unset($params);	// not used, but part of the hook signature
+
+		return [
+			Api\Acl::READ   => 'read',
+			Api\Acl::EDIT   => 'edit',
+			Api\Acl::DELETE => 'delete',
+		];
+	}
 }

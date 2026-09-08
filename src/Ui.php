@@ -122,8 +122,14 @@ class Ui
 			'to_app' => Bo::APP,
 		];
 		$readonlys = [
-			'button[delete]' => empty($content['host_id']),
+			'button[delete]' => empty($content['host_id']) ||
+				!$this->bo->check_perms(Api\Acl::DELETE, $content),
 		];
+		// read-only rights: show the host, but let nothing be changed or saved
+		if (!empty($content['host_id']) && !$this->bo->check_perms(Api\Acl::EDIT, $content))
+		{
+			$readonlys['__ALL__'] = true;
+		}
 		// Preserved values come back on the next submit without a widget carrying them,
 		// and so without the browser being able to change them on the way.  Name the
 		// ones that need it rather than preserving $content wholesale: host_id is what
@@ -176,7 +182,26 @@ class Ui
 			Api\Cache::setSession(Bo::APP, 'index', $query);
 		}
 
-		return $this->bo->get_rows($query, $rows, $readonlys);
+		$total = $this->bo->get_rows($query, $rows, $readonlys);
+
+		// Tell each row what may be done to it.  The action framework reads these
+		// classes per row, so a selection mixing hosts you may delete with hosts you
+		// may not still offers Delete - and runs it only on the ones it applies to.
+		foreach($rows as $n => &$row)
+		{
+			if (!is_int($n)) continue;	// skip the non-row keys get_rows() adds
+
+			if (!$this->bo->check_perms(Api\Acl::EDIT, $row))
+			{
+				$row['class'] .= ' rowNoEdit';
+			}
+			if (!$this->bo->check_perms(Api\Acl::DELETE, $row))
+			{
+				$row['class'] .= ' rowNoDelete';
+			}
+		}
+
+		return $total;
 	}
 
 	/**
@@ -200,6 +225,7 @@ class Ui
 				'allowOnMultiple' => false,
 				'url' => 'menuaction=example.'.self::class.'.edit&host_id=$id',
 				'popup' => '640x480',
+				'disableClass' => 'rowNoEdit',
 				'group' => $group,
 			],
 			'add' => [
@@ -211,6 +237,7 @@ class Ui
 			'delete' => [
 				'caption' => 'Delete',
 				'confirm' => 'Delete this host(s)',
+				'disableClass' => 'rowNoDelete',
 				'group' => $group=5,
 			],
 		];
