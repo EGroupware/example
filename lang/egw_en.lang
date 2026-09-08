@@ -1,5 +1,6 @@
 %1 host(s) deleted.	example	en	%1 host(s) deleted.
 delete this host(s)	example	en	Delete this host(s)
+description is required	example	en	Description is required
 do you really want to delete this host?	example	en	Do you really want to delete this host?
 entry deleted.	example	en	Entry deleted.
 entry saved.	example	en	Entry saved.
@@ -7,4 +8,5 @@ error deleting entry!	example	en	Error deleting entry!
 error storing entry!	example	en	Error storing entry!
 example	common	en	Example
 hostname	example	en	Hostname
+require a description for every host	example	en	Require a description for every host
 unknown action %1!	example	en	Unknown action %1!

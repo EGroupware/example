@@ -80,6 +80,16 @@ class Ui
 			{
 				case 'save':
 				case 'apply':
+					// An installation can insist on a description.  The browser could
+					// check this too, and should, but the server is the only place the
+					// rule can actually be enforced.
+					$config = Api\Config::read(Bo::APP);
+					if (!empty($config['require_description']) && empty($content['host_description']))
+					{
+						Api\Etemplate::set_validation_error('host_description',
+							lang('Description is required'));
+						break;	// no save, and the dialog comes back with the error on it
+					}
 					if (!$this->bo->save($content))
 					{
 						// tell the list that opened us to refresh this row

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE overlay PUBLIC "-//EGroupware GmbH//eTemplate 2.0//EN" "https://www.egroupware.org/etemplate2.0.dtd">
+<overlay>
+	<template id="example.config" template="" lang="" group="0" version="26.1">
+		<grid width="100%" class="admin-config egwGridView_grid">
+			<columns>
+				<column width="60%"/>
+				<column/>
+			</columns>
+			<rows>
+				<row>
+					<et2-description  value="Require a description for every host" label="%s:"></et2-description>
+					<et2-select  id="newsettings[require_description]">
+						<option value="">No</option>
+						<option value="1">Yes</option>
+					</et2-select>
+				</row>
+			</rows>
+		</grid>
+	</template>
+</overlay>

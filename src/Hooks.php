@@ -73,6 +73,11 @@ class Hooks
 			return;
 		}
 		display_section(Bo::APP, [
+			'Site Configuration' => Api\Egw::link('/index.php', [
+				'menuaction' => 'admin.admin_config.index',
+				'appname'    => Bo::APP,
+				'ajax'       => 'true',
+			]),
 			'Custom fields' => Api\Egw::link('/index.php', [
 				'menuaction' => 'admin.admin_customfields.index',
 				'appname'    => Bo::APP,

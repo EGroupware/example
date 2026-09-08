@@ -9,137 +9,116 @@
 7. Step: [custom fields](https://github.com/EGroupware/example/tree/step7)
 8. Step: [categories](https://github.com/EGroupware/example/tree/step8)
 9. Step: [access control](https://github.com/EGroupware/example/tree/step9)
+10. Step: [telling everyone else](https://github.com/EGroupware/example/tree/step10)
 
-## 10. Step: telling everyone else
+## 11. Step: settings for the whole installation
 
-Saving a host updates your own list, because your browser asked for the change. Everyone
-else's list goes stale until they reload. This step fixes that: a change is announced, and
-open lists update themselves.
+An application can have settings of its own: decisions an administrator makes once, for
+everybody, about how this installation behaves. This step adds one - whether a host must
+have a description - and enforces it.
 
-![step10-01 A host appearing in a second user's list without a reload](https://raw.githubusercontent.com/wiki/EGroupware/example/images/step10-01.png)
+![step11-01 The app's configuration page](https://raw.githubusercontent.com/wiki/EGroupware/example/images/step11-01.png)
 
-### src/Bo.php
+Configuration is for rules about the installation, not for personal taste. A default a user
+should be able to change for themselves is a *preference*, which is the next step.
 
-One method, called after a host is written or removed:
+### templates/default/config.xet
+
+The page is an ordinary template. The administration application looks for one named
+`<app>.config` and renders it, so there is no controller to write:
+
+```xml
+<template id="example.config">
+	<grid width="100%" class="admin-config egwGridView_grid">
+		<columns>
+			<column width="60%"/>
+			<column/>
+		</columns>
+		<rows>
+			<row>
+				<et2-description  value="Require a description for every host" label="%s:"></et2-description>
+				<et2-select  id="newsettings[require_description]">
+					<option value="">No</option>
+					<option value="1">Yes</option>
+				</et2-select>
+			</row>
+		</rows>
+	</grid>
+</template>
+```
+
+Every setting lives under **`newsettings[…]`** - that is the name the administration
+application reads and writes; an id outside it is simply ignored. Any widget works: a setting
+is only a value with a label.
+
+### src/Hooks.php
+
+The page needs a way in, which is the admin section from step 7:
 
 ```php
-protected function push($type, array $host)
+'Site Configuration' => Api\Egw::link('/index.php', [
+	'menuaction' => 'admin.admin_config.index',
+	'appname'    => Bo::APP,
+	'ajax'       => 'true',
+]),
+```
+
+`admin.admin_config.index` is the administration application's own page; `appname` is all it
+needs to find our template and store what is set on it. The entry appears under our
+application's name, and reads *App configuration* - that is what the phrase
+`Site Configuration` is translated to.
+
+### src/Ui.php
+
+A setting nobody reads changes nothing. `Api\Config::read()` answers what is stored for an
+application, and the rule is applied before anything is written:
+
+```php
+// An installation can insist on a description.  The browser could
+// check this too, and should, but the server is the only place the
+// rule can actually be enforced.
+$config = Api\Config::read(Bo::APP);
+if (!empty($config['require_description']) && empty($content['host_description']))
 {
-	(new Api\Json\Push(Api\Json\Push::ALL))->apply('egw.push', [[
-		'app'        => self::APP,
-		'id'         => $host['host_id'],
-		'type'       => $type,
-		'acl'        => ['host_creator' => $host['host_creator']],
-		'account_id' => $GLOBALS['egw_info']['user']['account_id'],
-	]]);
+	Api\Etemplate::set_validation_error('host_description',
+		lang('Description is required'));
+	break;	// no save, and the dialog comes back with the error on it
 }
 ```
 
-`Push::ALL` sends to every logged-in user. That sounds wasteful, and it is deliberate:
-working out server-side who is allowed to see a host, for everyone currently online, would
-cost more than sending a short message and letting each browser decide. Which is why the
-message carries no host data - only what is needed to make that decision, and an id to
-fetch with if the answer is yes.
+`set_validation_error()` names the widget the message belongs to, so the dialog comes back
+with the error attached to the field rather than as a toast the user has to interpret. The
+`break` leaves the switch without saving, and execution falls through to the same `exec()`
+that drew the form in the first place.
 
-It goes at the end of a successful write, next to the link handling:
-
-```php
-if (($error = parent::save(null, $extra_where)) == 0)
-{
-	// A new host cannot be linked before it exists, so the dialog holds its
-	// links until now and hands them over as link_to[to_id].
-	if (!empty($keys['link_to']['to_id']) && is_array($keys['link_to']['to_id']))
-	{
-		Api\Link::link(self::APP, $this->data['host_id'], $keys['link_to']['to_id']);
-	}
-	// $stored fills in what the dialog did not send - host_creator above all,
-	// since that is what the receiving browsers decide on
-	$this->push($is_new ? 'add' : 'edit', $this->data + $stored);
-}
-```
-
-That `$this->data + $stored` is worth a moment. `$this->data` holds what was submitted, and
-the dialog only submits what it shows - there is no owner field on it, so `host_creator` is
-not in there. Sending the message from the submitted data alone produces one with an empty
-`acl`, which every receiver would then reject. The stored host supplies what the form did
-not.
-
-Deleting announces itself the same way, from the host it just read to check permissions:
-
-```php
-$this->push('delete', $host);
-```
-
-### js/app.ts
-
-The receiving end is one property:
-
-```ts
-/**
- * Row fields holding an account whose grants decide whether a pushed change
- * is any of our business
- *
- * @var string[]
- */
-protected push_grant_fields = ['host_creator'];
-```
-
-`EgwApp` does the rest. It takes the account named in the message's `acl`, compares it with
-the grants this user holds, and - when the change is one this user could care about - hands
-it to the list, which refreshes that single row rather than reloading everything.
-
-Nothing else is needed. An application only writes its own `push()` method when it wants
-different behaviour from that.
-
-### One row, not the whole list
-
-Refreshing a single row is not an ordinary listing, and it does not reach `get_rows()`
-looking like one: it arrives with `col_filter` narrowed to the row being refreshed, and
-`$query['csv_export']` set to `refresh`. That is the flag
-[step 4](https://github.com/EGroupware/example/tree/step4)'s `get_rows()` tests before it
-stores anything:
-
-```php
-if (empty($query['csv_export']))
-{
-	Api\Cache::setSession(Bo::APP, 'index', $query);
-}
-```
-
-Store that one and the narrowed filter becomes the list's saved state: every later load
-answers with just that row, and reloading the page does not clear it, because the stored
-query is precisely what a reload restores. A CSV export arrives the same way and must be
-skipped for the same reason.
+Doing this on the server is the point. A browser can check a field is filled in, and should,
+because it saves a round trip and tells the user sooner - but a browser is also the one part
+of this whole arrangement an attacker controls. A rule that only exists in the client is a
+suggestion.
 
 ## Try it
 
-You need two browser windows that are not the same window - a second browser, or a private
-window. The same user in both is fine: a push goes to every logged-in client, not only to
-other people.
-
-1. Open **Example** in both, side by side.
-2. In the first, add a host.
-3. It appears in the second, without touching it.
-4. Change its name in one window and watch the row update in the other.
-5. Delete it, and watch the row go.
-
-Push needs a push server to be configured for the installation. Without one, EGroupware
-falls back to polling, and the same updates arrive - just not as promptly.
+1. **Admin > Applications > Example > App configuration**: set *Require a description for
+   every host* to **Yes** and save.
+2. Add a host, fill in only the hostname, and press **Save**. It does not save, and the
+   description field is marked with *Description is required*.
+3. Fill the description in and save again. It works.
+4. Set the configuration back to **No**. A host with no description saves fine.
 
 ### Troubleshooting
 
-**Nothing arrives** - check the installation actually has push configured before suspecting
-this code; *Admin > Test Push* answers that in one click.
+**The configuration page is empty** - the template has to be named exactly `example.config`,
+and the file has to be `templates/default/config.xet`.
 
-**The window you saved in updates, the other does not** - the window that submitted the form
-updates for that reason alone, push or no push. It tells you nothing about whether the push
-worked; only the other window does.
+**Settings look saved but nothing is stored** - the widget ids have to be inside
+`newsettings[…]`.
 
-**Everything arrives, but nothing appears in the list** - the id in the message has to be the
-one the list uses for a row, the `row_id` from step 4.
+**The rule never triggers** - `Api\Config::read()` takes the application name, and the key
+has to match the id inside `newsettings[…]`.
 
-**The list drops to just the pushed row, and a reload does not fix it** - `get_rows()` stored
-the refresh query as the list's state. That is what the `csv_export` test above prevents.
+**A changed setting does not take effect** - configuration is cached; *Admin > Clear
+cache/register hooks*. While developing templates, a browser can also hold onto an old copy
+of a `.xet` - a forced refresh rules that out.
 
---> continue to [step 11](https://github.com/EGroupware/example/tree/step11), which adds
-site-wide configuration
+--> continue to [step 12](https://github.com/EGroupware/example/tree/step12), which lets each
+user choose for themselves
