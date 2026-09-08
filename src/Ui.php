@@ -113,12 +113,22 @@ class Ui
 					break;
 			}
 		}
+		// What the link widgets work on: the host itself once it exists, or - while it
+		// does not - whatever links the dialog is holding for us until it does.  to_id
+		// of 0 is what tells et2-link-to to hold them client-side rather than store
+		// them against an id that is not there yet.
+		$content['link_to'] = [
+			'to_id'  => $content['host_id'] ?: ($content['link_to']['to_id'] ?? 0),
+			'to_app' => Bo::APP,
+		];
 		$readonlys = [
 			'button[delete]' => empty($content['host_id']),
 		];
 		// Preserved values come back on the next submit without a widget carrying them,
 		// and so without the browser being able to change them on the way.  Name the
-		// ones that need it: host_id is what says which host we are editing.
+		// ones that need it rather than preserving $content wholesale: host_id is what
+		// says which host we are editing, and everything else on this dialog either has
+		// a widget of its own or is rebuilt above.
 		$preserv = [
 			'host_id' => $content['host_id'] ?? null,
 		];

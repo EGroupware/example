@@ -27,6 +27,10 @@ $setup_info['example']['license']  = 'GPL';
 $setup_info['example']['description'] =
 'Just an example app to start developing with.';
 
+// Hooks we implement, see src/Hooks.php.  Registered when the app is installed,
+// and by Admin > Clear cache/register hooks.
+$setup_info['example']['hooks']['search_link'] = 'EGroupware\\Example\\Hooks::search_link';
+
 /* Dependencies for this app to work */
 $setup_info['example']['depends'][] = array(
 	'appname'  => 'api',

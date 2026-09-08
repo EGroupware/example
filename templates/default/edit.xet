@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE overlay PUBLIC "-//EGroupware GmbH//eTemplate 2.0//EN" "https://www.egroupware.org/etemplate2.0.dtd">
 <overlay>
+	<template id="example.edit.description" template="" lang="" group="0" version="26.1">
+		<et2-textarea  id="host_description" rows="10"></et2-textarea>
+	</template>
+	<template id="example.edit.links" template="" lang="" group="0" version="26.1">
+		<et2-vbox  width="100%">
+			<et2-link-to  id="link_to"></et2-link-to>
+			<et2-link-list  id="link_to"></et2-link-list>
+		</et2-vbox>
+	</template>
 	<template id="example.edit" template="" lang="" group="0" version="26.1">
 		<grid width="100%">
 			<columns>
@@ -13,8 +22,16 @@
 					<et2-textbox  id="host_name" tabindex="1" maxlength="64"></et2-textbox>
 				</row>
 				<row>
-					<et2-description  for="host_description" value="Description"></et2-description>
-					<et2-textarea  id="host_description" tabindex="2" rows="7"></et2-textarea>
+					<et2-tabbox  id="tabs" span="all" width="100%" tabHeight="220">
+						<tabs>
+							<tab id="description" label="Description"/>
+							<tab id="links" label="Links"/>
+						</tabs>
+						<tabpanels>
+							<template id="example.edit.description"/>
+							<template id="example.edit.links"/>
+						</tabpanels>
+					</et2-tabbox>
 				</row>
 				<row>
 					<et2-hbox  span="all" width="100%">

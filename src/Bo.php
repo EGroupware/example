@@ -44,7 +44,8 @@ class Bo extends Api\Storage\Base
 	/**
 	 * Save a host
 	 *
-	 * Reimplemented to record who created and last changed it.
+	 * Reimplemented to record who created and last changed it, and to store the
+	 * links the dialog collected while the host had no id yet.
 	 *
 	 * @param array $keys =null if given, copied to data before saving
 	 * @param string|array $extra_where =null extra where clause
@@ -62,6 +63,88 @@ class Bo extends Api\Storage\Base
 		$this->data['host_modifier'] = $GLOBALS['egw_info']['user']['account_id'];
 		$this->data['host_modified'] = $this->now;
 
-		return parent::save(null, $extra_where);
+		if (($error = parent::save(null, $extra_where)) == 0 &&
+			// A new host cannot be linked before it exists, so the dialog holds its
+			// links until now and hands them over as link_to[to_id].
+			!empty($keys['link_to']['to_id']) && is_array($keys['link_to']['to_id']))
+		{
+			Api\Link::link(self::APP, $this->data['host_id'], $keys['link_to']['to_id']);
+		}
+		return $error;
+	}
+
+	/**
+	 * Delete a host
+	 *
+	 * Reimplemented to remove its links as well, so the entries on the other side
+	 * do not keep pointing at a host that is gone.
+	 *
+	 * @param array|int $keys =null host_id, or col => value pairs, or null for the loaded host
+	 * @param boolean $only_return_query =false not supported, part of the parent signature
+	 * @return int number of rows deleted
+	 */
+	public function delete($keys = null, $only_return_query = false)
+	{
+		if (!is_array($keys) && (int)$keys)
+		{
+			$keys = ['host_id' => (int)$keys];
+		}
+		$host_id = $keys === null ? $this->data['host_id'] : $keys['host_id'];
+
+		if (($deleted = parent::delete($keys)) && $host_id)
+		{
+			Api\Link::unlink(0, self::APP, $host_id);
+		}
+		return $deleted;
+	}
+
+	/**
+	 * Name of a host, as other applications show it on a link
+	 *
+	 * Registered as "title" in the link registry.
+	 *
+	 * @param int|array $entry host_id, or the host itself if the caller already read it
+	 * @return string|null|false name, null if there is no such host
+	 */
+	public function link_title($entry)
+	{
+		if (!is_array($entry))
+		{
+			// read() replaces $this->data, which whoever called us may still be using
+			$backup =& $this->data;
+			unset($this->data);
+			$entry = $this->read(['host_id' => $entry]);
+			$this->data =& $backup;
+		}
+		return $entry ? $entry['host_name'] : $entry;
+	}
+
+	/**
+	 * Hosts matching what the user typed into the link dialog
+	 *
+	 * Registered as "query" in the link registry.
+	 *
+	 * @param string $pattern what to search for
+	 * @param array& $options in: start & num_rows for paging, out: total for the pager
+	 * @return array host_id => name
+	 */
+	public function link_query($pattern, array &$options = [])
+	{
+		$limit = false;
+		$need_count = false;
+		if (!empty($options['start']) || !empty($options['num_rows']))
+		{
+			$limit = [$options['start'], $options['num_rows']];
+			$need_count = true;
+		}
+		$result = [];
+		foreach((array)$this->search($pattern, false, 'host_name', '', '%', false, 'OR',
+			$limit, null, '', $need_count) as $host)
+		{
+			if ($host) $result[$host['host_id']] = $this->link_title($host);
+		}
+		$options['total'] = $need_count ? $this->total : count($result);
+
+		return $result;
 	}
 }

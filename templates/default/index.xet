@@ -4,7 +4,7 @@
 	<template id="example.index.header" template="" lang="" group="0" version="26.1">
 		<et2-toolbar id="toolbar">
 			<et2-button-icon statustext="Add" id="add" image="add" slot="prefix"
-				onclick="egw(window).openPopup(egw::link('/index.php','menuaction=example.EGroupware\\Example\\Ui.edit'),'640','480','_blank','example',null,true); return false;"
+				onclick="egw.open('','example','add'); return false;"
 				noSubmit="true"></et2-button-icon>
 			<template template="api.search-button" slot="prefix"></template>
 		</et2-toolbar>
