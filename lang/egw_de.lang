@@ -1,3 +1,7 @@
+do you really want to delete this host?	example	de	Wollen Sie diesen Host wirklich löschen?
+entry deleted.	example	de	Eintrag gelöscht.
 entry saved.	example	de	Eintrag gespeichert.
+error deleting entry!	example	de	Fehler beim Löschen des Eintrags!
+error storing entry!	example	de	Fehler beim Speichern des Eintrags!
 example	common	de	Beispiel
 hostname	example	de	Hostname

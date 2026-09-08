@@ -31,10 +31,22 @@ class Ui
 	];
 
 	/**
-	 * Edit a host
+	 * Instance of our business object
 	 *
-	 * Called twice for one round trip: once with null to draw the form, and again
-	 * with what the browser submitted.
+	 * @var Bo
+	 */
+	protected $bo;
+
+	/**
+	 * Constructor
+	 */
+	public function __construct()
+	{
+		$this->bo = new Bo();
+	}
+
+	/**
+	 * Edit a host
 	 *
 	 * @param ?array $content =null values from the submitted form, null on first call
 	 */
@@ -42,7 +54,22 @@ class Ui
 	{
 		if (!is_array($content))
 		{
-			$content = [];
+			// first call: either an existing host, or an empty one to add
+			if (!empty($_GET['host_id']))
+			{
+				// read() answers false for a host that is not there.  init() answers an
+				// empty array, which is a perfectly good new host - so only treat a
+				// failed read as "not found", not an empty one.
+				if (($content = $this->bo->read(['host_id' => (int)$_GET['host_id']])) === false)
+				{
+					Api\Framework::message(lang('Entry not found!'), 'error');
+					$content = $this->bo->init();
+				}
+			}
+			else
+			{
+				$content = $this->bo->init();
+			}
 		}
 		else
 		{
@@ -54,13 +81,44 @@ class Ui
 			{
 				case 'save':
 				case 'apply':
-					// nowhere to put it yet - the next step gives the app a table
-					Api\Framework::message(lang('Entry saved.'));
+					if (!$this->bo->save($content))
+					{
+						Api\Framework::message(lang('Entry saved.'));
+						// take back what storage made of it: the new id, and the
+						// timestamps it set
+						$content = array_merge($content, $this->bo->data);
+					}
+					else
+					{
+						Api\Framework::message(lang('Error storing entry!'), 'error');
+					}
+					break;
+
+				case 'delete':
+					if ($this->bo->delete(['host_id' => $content['host_id']]))
+					{
+						Api\Framework::message(lang('Entry deleted.'));
+						$content = $this->bo->init();
+					}
+					else
+					{
+						Api\Framework::message(lang('Error deleting entry!'), 'error');
+					}
 					break;
 			}
 		}
+		$readonlys = [
+			'button[delete]' => empty($content['host_id']),
+		];
+		// Preserved values come back on the next submit without a widget carrying them,
+		// and so without the browser being able to change them on the way.  Name the
+		// ones that need it: host_id is what says which host we are editing.
+		$preserv = [
+			'host_id' => $content['host_id'] ?? null,
+		];
+
 		$tmpl = new Api\Etemplate('example.edit');
-		$tmpl->exec('example.'.self::class.'.edit', $content);
+		$tmpl->exec('example.'.self::class.'.edit', $content, [], $readonlys, $preserv);
 	}
 
 	/**

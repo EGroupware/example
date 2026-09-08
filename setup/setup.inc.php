@@ -12,9 +12,10 @@
  */
 
 $setup_info['example']['name']      = 'example';
-$setup_info['example']['version']   = '26.1.001';
+$setup_info['example']['version']   = '26.1.002';
 $setup_info['example']['app_order'] = 5;
 $setup_info['example']['enable']    = 1;
+$setup_info['example']['tables']    = array('egw_example');
 $setup_info['example']['index']     = 'example.EGroupware\\Example\\Ui.index&ajax=true';
 
 $setup_info['example']['author'] =

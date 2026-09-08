@@ -1,3 +1,7 @@
+do you really want to delete this host?	example	en	Do you really want to delete this host?
+entry deleted.	example	en	Entry deleted.
 entry saved.	example	en	Entry saved.
+error deleting entry!	example	en	Error deleting entry!
+error storing entry!	example	en	Error storing entry!
 example	common	en	Example
 hostname	example	en	Hostname
