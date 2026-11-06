@@ -60,6 +60,10 @@ and what each file is for.
 The quickest way to a new application is to copy this one and work through it:
 
 - rename the directory, and `$setup_info['<app>']` in `setup/setup.inc.php`
+- keep `&ajax=true` at the end of `index` in `setup/setup.inc.php`: without it the app is
+  loaded in an iframe, and the header, the sidebox, the browser history and printing all
+  misbehave. The entry point is stored at install time, so on an installation that already
+  exists raise the version and add an update function, as step 2 does
 - rename the namespace in `src/`, and the class names EGroupware is told about
 - rename `egw_example` and its `host_` columns in `tables_current.inc.php`, and start the
   version chain again from scratch in `tables_update.inc.php`
